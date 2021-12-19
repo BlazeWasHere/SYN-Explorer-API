@@ -1,0 +1,185 @@
+{
+  "info": {
+    "title": "SYN Explorer",
+    "version": "1.0.0",
+    "description": "An API to track bridge transactions on SYN. Still a WIP. View the repo [here](https://github.com/blazewashere/syn-explorer-api)",
+    "contact": {
+      "email": "blaze@dorime.org"
+    },
+    "license": {
+      "name": "Boost Software License 1.0",
+      "url": " https://www.boost.org/LICENSE_1_0.txt"
+    }
+  },
+  "openapi": "3.0.3",
+  "servers": [
+    { "url": "https://explorer.dorime.org", "description": "production" },
+    { "url": "http://localhost:31337", "description": "development" }
+  ],
+  "components": {
+    "schemas": {
+      "TxHash": {
+        "type": "string",
+        "pattern": "/^0x([A-Fa-f0-9]{64})$/",
+        "example": "0x2db3ead3bcd345e9ecb8b022740d2fc1ceb5b4903d36f91c1e4cbaa79e7f3a3a"
+      },
+      "Address": {
+        "type": "string",
+        "pattern": "/^0x([A-Fa-f0-9]{40})$/",
+        "example": "0x985458e523db3d53125813ed68c274899e9dfab4"
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "from_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "from_chain_id": {
+            "type": "integer"
+          },
+          "from_tx_hash": {
+            "$ref": "#/components/schemas/TxHash"
+          },
+          "pending": {
+            "type": "boolean"
+          },
+          "received_time": {
+            "type": "integer",
+            "nullable": true
+          },
+          "received_token": {
+            "$ref": "#/components/schemas/Address",
+            "nullable": true
+          },
+          "received_value": {
+            "type": "integer",
+            "nullable": true
+          },
+          "sent_time": {
+            "type": "integer"
+          },
+          "sent_token": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "sent_value": {
+            "type": "integer"
+          },
+          "swap_success": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "to_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "to_chain_id": {
+            "type": "integer"
+          },
+          "to_tx_hash": {
+            "$ref": "#/components/schemas/TxHash",
+            "nullable": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/analytics/users/unique": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "example": 420
+                }
+              }
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "get unique bridge users count",
+        "tags": ["Users"]
+      }
+    },
+    "/api/v1/search/txhash/{txhash}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "txhash",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TxHash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "nullable": true
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "get bridge information from a transaction hash",
+        "tags": ["Transaction"]
+      }
+    },
+    "/api/v1/search/address/{address}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Address"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "nullable": true
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "get all transactions related to an address",
+        "tags": ["Address"]
+      }
+    }
+  }
+}

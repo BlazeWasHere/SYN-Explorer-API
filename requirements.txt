@@ -1,0 +1,8 @@
+psycopg[binary,pool]
+flask
+gevent
+web3
+python-dotenv
+simplejson
+gunicorn
+redis

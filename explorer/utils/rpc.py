@@ -150,7 +150,10 @@ def bridge_callback(chain: str,
             pool = address_to_pool(chain, args['pool'])
 
         if event not in [
-                'TokenRedeem', 'TokenRedeemAndRemove', 'TokenDeposit'
+                'TokenRedeem',
+                'TokenRedeemAndRemove',
+                'TokenDeposit',
+                'TokenDepositAndSwap',
         ]:
             received_token = pool_tokens[args['tokenIndexTo']]
             sent_token = _log['address']

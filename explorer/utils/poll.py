@@ -7,9 +7,10 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import List, Callable, TypeVar, cast
+from typing import List, Callable, Optional, TypeVar, cast
 from contextlib import suppress
 import traceback
+import logging
 
 from psycopg.errors import UniqueViolation
 from web3.types import LogReceipt
@@ -25,7 +26,7 @@ CB = Callable[[str, str, LogReceipt], None]
 T = TypeVar('T')
 
 
-def retry(func: Callable[..., T], *args, **kwargs) -> T:
+def retry(func: Callable[..., T], *args, **kwargs) -> Optional[T]:
     attempts = kwargs.pop('attempts', 3)
 
     for _ in range(attempts):
@@ -37,7 +38,7 @@ def retry(func: Callable[..., T], *args, **kwargs) -> T:
             traceback.print_exc()
             gevent.sleep(2**_)
 
-    raise RuntimeError(f'maximum retries ({attempts}) reached')
+    logging.critical(f'maximum retries ({attempts}) reached')
 
 
 def log_loop(filter, chain: str, address: str, poll: int, cb: CB):

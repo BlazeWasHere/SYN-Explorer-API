@@ -8,6 +8,7 @@
 """
 
 from typing import List, Callable, cast
+import traceback
 
 from web3.types import LogReceipt
 from gevent import Greenlet
@@ -29,7 +30,7 @@ def log_loop(filter, chain: str, address: str, poll: int, cb: CB):
                 cb(chain, address, event)
             except Exception:
                 print(chain, event)
-                raise
+                traceback.print_exc()
 
         gevent.sleep(poll)
 

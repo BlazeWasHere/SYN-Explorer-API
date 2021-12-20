@@ -275,6 +275,7 @@ TOKENS = {
         '0x19e1ae0ee35c0404f835521146206595d37981ae',  # nETH
         '0x321e7092a180bb43555132ec53aaa65a5bf84251',  # gOHM
         '0xcc5672600b948df4b665d9979357bef3af56b300',  # synFRAX
+        '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',  # WETH.e
     ],
     'arbitrum': [
         '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',  # DAI

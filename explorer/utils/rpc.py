@@ -17,8 +17,8 @@ from web3 import Web3
 import gevent
 
 from explorer.utils.data import BRIDGE_ABI, CHAINS, OLDBRIDGE_ABI, PSQL, SYN_DATA, \
-    LOGS_REDIS_URL, OLDERBRIDGE_ABI, TOKENS_IN_POOL, TOPICS, TOPIC_TO_EVENT, \
-    TRANSFER_ABI, Direction, CHAINS_REVERSED
+    LOGS_REDIS_URL, OLDERBRIDGE_ABI, TOKENS_IN_POOL, TOKENS_INFO, TOPICS, \
+    TOPIC_TO_EVENT, TRANSFER_ABI, Direction, CHAINS_REVERSED
 from explorer.utils.helpers import convert, address_to_pool, search_logs
 
 _start_blocks = {
@@ -161,9 +161,7 @@ def bridge_callback(chain: str,
             received_token = sent_token = args['token']
 
             if event == 'TokenDepositAndSwap':
-                # WETH (ETH)
-                if sent_token.lower(
-                ) == '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2':
+                if 'ETH' in TOKENS_INFO[chain][sent_token.lower()]['name']:
                     pool_tokens = TOKENS_IN_POOL[to_chain]['neth']
 
                 received_token = pool_tokens[args['tokenIndexTo']]

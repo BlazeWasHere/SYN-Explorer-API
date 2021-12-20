@@ -86,6 +86,7 @@ SYN_DATA = {
         "rpc": os.getenv('BOBA_RPC'),
         "bridge": "0x432036208d2717394d2614d6697c46df3ed69540",
         "nusdpool": "0x75ff037256b36f15919369ac58695550be72fead",
+        "nethpool": "0x753bb855c8fe814233d26bb23af61cb3d2022be5",
     },
     "moonriver": {
         "rpc": os.getenv('MOVR_RPC'),

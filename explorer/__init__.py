@@ -22,6 +22,7 @@ import simplejson as json
 from flask import Flask
 import lru
 
+from explorer.utils.helpers import dispatch_get_logs
 from explorer.utils.database import Transaction
 from explorer.utils.rpc import bridge_callback
 from explorer.utils.data import SYN_DATA
@@ -38,6 +39,7 @@ assert b != c, '_session_cache size did not change'
 assert c == n, 'new _session_cache size is not what we set it to'
 
 gevent.spawn(poll.start, bridge_callback)
+#gevent.spawn(dispatch_get_logs, bridge_callback)
 
 
 class HexConverter(BaseConverter):

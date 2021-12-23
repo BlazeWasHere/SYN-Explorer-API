@@ -12,6 +12,7 @@ services:
       - explorer-net
     depends_on:
       - psql
+      - redis
 
   psql:
     image: postgres:14
@@ -21,9 +22,17 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
     expose:
       - 5432
+    restart: always
     networks:
       - explorer-net
 
+  redis:
+    image: redis
+    expose:
+      - 6379
+    restart: always
+    networks:
+      - explorer-net
 networks:
   explorer-net:
     driver: bridge

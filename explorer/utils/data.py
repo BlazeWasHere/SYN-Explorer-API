@@ -191,31 +191,100 @@ EVENTS = {
 }
 
 TOPICS = {
-    # TokenRedeemAndSwap
+    # event TokenRedeemAndSwap(
+    #  address indexed to,
+    #  uint256 chainId,
+    #  IERC20 token,
+    #  uint256 amount,
+    #  uint8 tokenIndexFrom,
+    #  uint8 tokenIndexTo,
+    #  uint256 minDy,
+    #  uint256 deadline
+    # );
     '0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425':
     Direction.OUT,
-    # TokenMintAndSwap
+    # event TokenMintAndSwap(
+    #  address indexed to,
+    #  IERC20Mintable token,
+    #  uint256 amount,
+    #  uint256 fee,
+    #  uint8 tokenIndexFrom,
+    #  uint8 tokenIndexTo,
+    #  uint256 minDy,
+    #  uint256 deadline,
+    #  bool swapSuccess,
+    #  bytes32 indexed kappa
+    # );
     '0x4f56ec39e98539920503fd54ee56ae0cbebe9eb15aa778f18de67701eeae7c65':
     Direction.IN,
-    # TokenRedeemAndRemove
+    # event TokenRedeemAndRemove(
+    #  address indexed to,
+    #  uint256 chainId,
+    #  IERC20 token,
+    #  uint256 amount,
+    #  uint8 swapTokenIndex,
+    #  uint256 swapMinAmount,
+    #  uint256 swapDeadline
+    # );
     '0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c':
     Direction.OUT,
-    # TokenRedeem
+    # event TokenRedeem(
+    #  address indexed to,
+    #  uint256 chainId,
+    #  IERC20 token,
+    #  uint256 amount
+    # );
     '0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c':
     Direction.OUT,
-    # TokenMint
+    # event TokenMint(
+    #  address indexed to,
+    #  IERC20Mintable token,
+    #  uint256 amount,
+    #  uint256 fee,
+    #  bytes32 indexed kappa
+    # );
     '0xbf14b9fde87f6e1c29a7e0787ad1d0d64b4648d8ae63da21524d9fd0f283dd38':
     Direction.IN,
-    # TokenDepositAndSwap
+    # event TokenDepositAndSwap(
+    #  address indexed to,
+    #  uint256 chainId,
+    #  IERC20 token,
+    #  uint256 amount,
+    #  uint8 tokenIndexFrom,
+    #  uint8 tokenIndexTo,
+    #  uint256 minDy,
+    #  uint256 deadline
+    # );
     '0x79c15604b92ef54d3f61f0c40caab8857927ca3d5092367163b4562c1699eb5f':
     Direction.OUT,
-    # TokenWithdrawAndRemove
+    # event TokenWithdrawAndRemove(
+    #  address indexed to,
+    #  IERC20 token,
+    #  uint256 amount,
+    #  uint256 fee,
+    #  uint8 swapTokenIndex,
+    #  uint256 swapMinAmount,
+    #  uint256 swapDeadline,
+    #  bool swapSuccess,
+    #  bytes32 indexed kappa
+    # );
     '0xc1a608d0f8122d014d03cc915a91d98cef4ebaf31ea3552320430cba05211b6d':
     Direction.IN,
-    # TokenDeposit
+    # event TokenDeposit(
+    #  address indexed to,
+    #  uint256 chainId,
+    #  IERC20 token,
+    #  uint256 amount
+    # );
     '0xda5273705dbef4bf1b902a131c2eac086b7e1476a8ab0cb4da08af1fe1bd8e3b':
     Direction.OUT,
-    # TokenWithdraw
+    # event TokenWithdraw(
+    #  address indexed to,
+    #  IERC20 token,
+    #  uint256 amount,
+    #  uint256 fee,
+    #  bytes32 indexed kappa
+    # );
     '0x8b0afdc777af6946e53045a4a75212769075d30455a212ac51c9b16f9c5c9b26':
     Direction.IN,
 }
@@ -309,6 +378,8 @@ TOKENS = {
         '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',  # 1USDT
         '0xed2a7edd7413021d440b09d654f3b87712abab66',  # nUSD
         '0xcf664087a5bb0237a0bad6742852ec6c8d69a27a',  # ONE
+        '0xfa7191d292d5633f702b0bd7e3e3bccc0e633200',  # synFRAX
+        '0x1852f70512298d56e9c8fdd905e02581e04ddb2a',  # synFRAX old
     ],
     'boba': [
         '0x66a2a913e447d6b4bf33efbec43aaef87890fbbc',  # USDC

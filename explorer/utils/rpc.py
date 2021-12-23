@@ -7,35 +7,37 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import Callable, Dict, cast, List, TypeVar
+from typing import Callable, Dict, cast, List
 import time
 
 from web3.exceptions import LogTopicError, MismatchedABI
 from web3.types import FilterParams, LogReceipt
+from psycopg.errors import UniqueViolation
 from hexbytes import HexBytes
 from web3 import Web3
 import gevent
 
-from explorer.utils.data import BRIDGE_ABI, CHAINS, OLDBRIDGE_ABI, PSQL, SYN_DATA, \
-    LOGS_REDIS_URL, OLDERBRIDGE_ABI, TOKENS_IN_POOL, TOKENS_INFO, TOPICS, \
-    TOPIC_TO_EVENT, TRANSFER_ABI, Direction, CHAINS_REVERSED
-from explorer.utils.helpers import convert, address_to_pool, search_logs
+from explorer.utils.data import BRIDGE_ABI, CHAINS, OLDBRIDGE_ABI, PSQL, \
+    SYN_DATA, LOGS_REDIS_URL, OLDERBRIDGE_ABI, TOKENS_IN_POOL, TOKENS_INFO, \
+    TOPICS, TOPIC_TO_EVENT, TRANSFER_ABI, Direction, CHAINS_REVERSED
+from explorer.utils.helpers import convert, address_to_pool, search_logs, \
+    retry
 
+# Start blocks of the 4pool ~>=Nov-7th-2021 apart from ethereum.
 _start_blocks = {
-    'ethereum': 13136427,
-    'arbitrum': 657404,
-    'avalanche': 3376709,
-    'bsc': 10065475,
-    'fantom': 18503502,
-    'polygon': 18026806,
-    'harmony': 18646320,
-    'boba': 16188,
+    'ethereum': 13136427,  # nUSD pool
+    'arbitrum': 2876718,  # nUSD pool
+    'avalanche': 6619002,  # nUSD pool
+    'bsc': 12431591,  # nUSD pool
+    'fantom': 21297076,  # nUSD Pool
+    'polygon': 21071348,  # nUSD pool
+    'harmony': 19163634,  # nUSD pool
+    'boba': 16221,  # nUSD pool
     'moonriver': 890949,
-    'optimism': 30718,
+    'optimism': 30819,  # nETH pool
 }
 
 MAX_BLOCKS = 5000
-T = TypeVar('T')
 
 OUT_SQL = """
 INSERT into
@@ -73,7 +75,9 @@ SET
     )
 WHERE
     to_address = %s
-    AND pending = true;
+    AND pending = true
+    AND received_token = %s
+    AND to_chain_id = %s;
 """
 
 LOST_IN_SQL = """
@@ -85,10 +89,11 @@ INSERT into
         to_chain_id,
         received_time,
         received_token,
-        swap_success
+        swap_success,
+        fee
     )
 VALUES
-    (%s, %s, %s, %s, %s, %s, %s);
+    (%s, %s, %s, %s, %s, %s, %s, %s);
 """
 
 
@@ -144,10 +149,24 @@ def bridge_callback(chain: str,
 
         args = data['args']  # type: ignore
         to_chain = CHAINS[args['chainId']]
-        pool_tokens = TOKENS_IN_POOL[to_chain][pool]
 
         if 'pool' in args:
+            # Some pools during testing - disregard these txs.
+            if ('0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89' == args['pool']
+                    and chain == 'optimism'):
+                return
+            elif ('0x11dB9cb06f98fA2bE027589B5D5734ca0D4E46BA' == args['pool']
+                  and chain == 'boba'):
+                return
             pool = address_to_pool(chain, args['pool'])
+        else:
+            # Find out if its an '*ETH' token.
+            if 'token' in args:
+                token = args['token'].lower()
+                if 'eth' in TOKENS_INFO[chain][token]['symbol'].lower():
+                    pool = 'neth'
+
+        pool_tokens = TOKENS_IN_POOL[to_chain][pool]
 
         if event not in [
                 'TokenRedeem',
@@ -183,13 +202,14 @@ def bridge_callback(chain: str,
                 if _data is None:
                     raise RuntimeError(
                         f'did not converge OUT, {event} {chain} {tx_hash.hex()}'
-                        f' receipt: {receipt}')
+                        f' receipt: {receipt}\n{args} {sent_token}')
 
             value = _data['value']
         else:
             value = args['amount']
 
         with PSQL.connection() as conn:
+            conn.autocommit = True
             with conn.cursor() as c:
                 c.execute(OUT_SQL, (
                     tx_hash,
@@ -210,7 +230,17 @@ def bridge_callback(chain: str,
         _, args = contract.decode_function_input(
             tx_info['input'])  # type: ignore
 
+        swap_success = args.get('swapSuccess', None)
+
         if 'pool' in args:
+            # Some pools during testing - disregard these txs.
+            if ('0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89' == args['pool']
+                    and chain == 'optimism'):
+                return
+            elif ('0x11dB9cb06f98fA2bE027589B5D5734ca0D4E46BA' == args['pool']
+                  and chain == 'boba'):
+                return
+
             pool = address_to_pool(chain, args['pool'])
 
         if event not in [
@@ -224,38 +254,68 @@ def bridge_callback(chain: str,
             received_token = args['token']
             do_search_logs = False
 
-        if 'swapSuccess' in args:
-            swap_success = args['swapSuccess']
-        else:
-            swap_success = None
-
         if do_search_logs:
             _data = search_logs(w3, receipt, received_token)
-            if _data is None:
-                raise RuntimeError(
-                    f'did not converge IN, {event} {chain} {tx_hash} '
-                    f'receipt: {receipt}')
+            if _data is None or not swap_success:
+                # Sometimes swap fails and the user received a nexus asset
+                # instead, so search for the nexus asset (nETH, nUSD).
+                if chain == 'ethereum':
+                    # Nexus assets aren't in eth pools.
+                    received_token = '0x1b84765de8b7566e4ceaf4d0fd3c5af52d3dde4f'
+                else:
+                    received_token = TOKENS_IN_POOL[chain][pool][0]
+
+                _data = search_logs(w3, receipt, received_token)
+                if _data is None:
+                    raise RuntimeError(
+                        f'did not converge IN, {event} {chain} {tx_hash.hex()}'
+                        f' receipt: {receipt}\n{args} {received_token}')
 
             value = str(_data['value'])
         else:
             value = args['amount']
 
         with PSQL.connection() as conn:
+            conn.autocommit = True
             with conn.cursor() as c:
-                c.execute(IN_SQL, (tx_hash, value, timestamp, swap_success,
-                                   HexBytes(args['to'])))
+                run_lost_sql = False
+                params = (
+                    tx_hash,
+                    value,
+                    timestamp,
+                    swap_success,
+                    HexBytes(args['to']),
+                    HexBytes(received_token),
+                    from_chain,
+                )
 
-                # No rows got updated: means that there was no corresponding OUT tx.
-                if c.rowcount == 0:
-                    c.execute(
-                        LOST_IN_SQL,
-                        (tx_hash, HexBytes(args['to']), value, from_chain,
-                         timestamp, HexBytes(received_token), swap_success))
-                else:
-                    assert c.rowcount == 1, c._last_query
+                try:
+                    c.execute(IN_SQL, params)
+                except:
+                    run_lost_sql = True
+                    raise
+                finally:
+                    # No rows got updated: means that there was no
+                    # corresponding OUT tx.
+                    if c.rowcount == 0 or run_lost_sql:
+                        c.execute(
+                            LOST_IN_SQL,
+                            (tx_hash, HexBytes(args['to']), value, from_chain,
+                             timestamp, HexBytes(received_token), swap_success,
+                             str(args['fee'])))
+                    else:
+                        if c.rowcount != 1:
+                            raise RuntimeError(
+                                f'{c._last_query} | {params} affected '
+                                f'{c.rowcount} not 1')
 
     else:
         raise RuntimeError(f'sanity check? got {direction}')
+
+    LOGS_REDIS_URL.set(f'{chain}:logs:{address}:MAX_BLOCK_STORED',
+                       log['blockNumber'])
+    LOGS_REDIS_URL.set(f'{chain}:logs:{address}:TX_INDEX',
+                       log['transactionIndex'])
 
 
 def get_logs(
@@ -318,16 +378,19 @@ def get_logs(
               and log['transactionIndex'] <= tx_index:
                 continue
 
-            callback(chain, address, log)
+            retry(callback, chain, address, log)
 
         start_block += max_blocks + 1
 
         y = time.time() - _start
         total_events += len(logs)
 
+        percent = 100 * (to_block - initial_block) \
+            / (till_block - initial_block)
+
         print(f'{key_namespace} | {_chain:{chain_len}} elapsed {y:5.1f}s'
-              f' ({y - x:4.2f}s), found {total_events:5} events, so far'
-              f' at block {start_block}')
+              f' ({y - x:5.1f}s), found {total_events:5} events,'
+              f' {percent:4.1f}% done: so far at block {start_block}')
         x = y
 
     gevent.joinall(jobs)

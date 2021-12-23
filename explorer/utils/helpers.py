@@ -7,16 +7,20 @@
 		  https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import List, Dict, Optional, TypeVar, Union, cast, Literal, Any
-from hexbytes import HexBytes
+from typing import List, Dict, Optional, TypeVar, Union, cast, Literal, Any, \
+    Callable
+import traceback
 import decimal
 import logging
 
+from web3.types import _Hash32, TxReceipt, LogReceipt
 from web3.exceptions import MismatchedABI
-from web3.types import _Hash32, TxReceipt
+from hexbytes import HexBytes
+from gevent import Greenlet
 from web3.main import Web3
+import gevent
 
-from .data import TOKEN_DECIMALS, POOLS, TRANSFER_ABI
+from .data import SYN_DATA, TOKEN_DECIMALS, POOLS, TRANSFER_ABI
 
 logger = logging.Logger(__name__)
 D = decimal.Decimal
@@ -163,10 +167,85 @@ def search_logs(w3: Web3,
                 received_token: str,
                 abi: str = TRANSFER_ABI) -> Optional[Dict[str, Any]]:
     for x in receipt['logs']:
-        if x['address'] == received_token:
+        if x['address'].lower() == received_token.lower():
             token = w3.eth.contract(x['address'], abi=abi)
 
             try:
                 return token.events['Transfer']().processLog(x)['args']
             except MismatchedABI:
                 continue
+
+
+def dispatch_get_logs(
+    cb: Callable[[str, str, LogReceipt], None],
+    topics: List[str] = None,
+    key_namespace: str = 'logs',
+    address_key: str = 'bridge',
+    join_all: bool = True,
+) -> Optional[List[Greenlet]]:
+    from explorer.utils.rpc import get_logs, TOPICS
+
+    topics = topics or list(TOPICS)
+    jobs: List[Greenlet] = []
+
+    for chain in SYN_DATA:
+        address = SYN_DATA[chain][address_key]
+
+        if chain in [
+                'harmony',
+                'ethereum',
+                'moonriver',
+        ]:
+            jobs.append(
+                gevent.spawn(get_logs,
+                             chain,
+                             cb,
+                             address,
+                             max_blocks=1024,
+                             topics=topics,
+                             key_namespace=key_namespace))
+        elif chain in ['boba', 'bsc']:
+            jobs.append(
+                gevent.spawn(get_logs,
+                             chain,
+                             cb,
+                             address,
+                             max_blocks=512,
+                             topics=topics,
+                             key_namespace=key_namespace))
+        elif chain == 'polygon':
+            jobs.append(
+                gevent.spawn(get_logs,
+                             chain,
+                             cb,
+                             address,
+                             max_blocks=2048,
+                             topics=topics,
+                             key_namespace=key_namespace))
+        else:
+            jobs.append(
+                gevent.spawn(get_logs,
+                             chain,
+                             cb,
+                             address,
+                             topics=topics,
+                             key_namespace=key_namespace))
+
+    if join_all:
+        gevent.joinall(jobs)
+    else:
+        return jobs
+
+
+def retry(func: Callable[..., T], *args, **kwargs) -> Optional[T]:
+    attempts = kwargs.pop('attempts', 3)
+
+    for _ in range(attempts):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            print(f'retry attempt {_}, args: {args}')
+            traceback.print_exc()
+            gevent.sleep(2**_)
+
+    logging.critical(f'maximum retries ({attempts}) reached')

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS txs (
     from_tx_hash bytea PRIMARY KEY,
-    to_tx_hash bytea UNIQUE,
+    to_tx_hash bytea,
     from_address bytea NOT NULL,
     to_address bytea NOT NULL,
     sent_value varchar NOT NULL,
@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS txs (
     received_time bigint,
     sent_token bytea NOT NULL,
     received_token bytea,
-    swap_success boolean
+    swap_success boolean,
+    CONSTRAINT to_tx_hash_key UNIQUE (to_tx_hash) DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE TABLE IF NOT EXISTS lost_txs (
@@ -20,9 +21,10 @@ CREATE TABLE IF NOT EXISTS lost_txs (
     to_address bytea NOT NULL,
     received_value varchar NOT NULL,
     to_chain_id bigint NOT NULL CHECK (to_chain_id > 0),
-    received_time bigint,
-    received_token bytea,
-    swap_success boolean
+    received_time bigint NOT NULL,
+    received_token bytea NOT NULL,
+    swap_success boolean,
+    fee varchar NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_from_address ON txs(from_address);

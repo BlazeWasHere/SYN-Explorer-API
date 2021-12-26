@@ -32,23 +32,7 @@ def _psql_connection() -> Generator[Cursor['Transaction'], None, None]:
             yield c
 
 
-@dataclass
-class Transaction:
-    from_tx_hash: HexBytes
-    to_tx_hash: Optional[HexBytes]
-    from_address: HexBytes
-    to_address: HexBytes
-    sent_value: int
-    received_value: Optional[int]
-    pending: bool
-    from_chain_id: int
-    to_chain_id: int
-    sent_time: int
-    received_time: Optional[int]
-    sent_token: HexBytes
-    received_token: Optional[HexBytes]
-    swap_success: Optional[bool]
-
+class Base:
     def __post_init__(self) -> None:
         for field in fields(self):
             val = self.__dict__[field.name]
@@ -63,6 +47,36 @@ class Transaction:
             elif not isinstance(val, get_args(field.type) or field.type):
                 raise TypeError(f'expected {field.name!r} to be of type '
                                 f'{field.type} not {type(val)}')
+
+
+@dataclass
+class LostTransaction(Base):
+    to_tx_hash: HexBytes
+    to_address: HexBytes
+    received_value: int
+    to_chain_id: int
+    received_time: int
+    received_token: HexBytes
+    swap_success: Optional[bool]
+    fee: int
+
+
+@dataclass
+class Transaction(Base):
+    from_tx_hash: HexBytes
+    to_tx_hash: Optional[HexBytes]
+    from_address: HexBytes
+    to_address: HexBytes
+    sent_value: int
+    received_value: Optional[int]
+    pending: bool
+    from_chain_id: int
+    to_chain_id: int
+    sent_time: int
+    received_time: Optional[int]
+    sent_token: HexBytes
+    received_token: Optional[HexBytes]
+    swap_success: Optional[bool]
 
     @staticmethod
     def search(column: str, value: Any) -> List["Transaction"]:

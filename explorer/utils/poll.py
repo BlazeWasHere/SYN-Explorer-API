@@ -27,7 +27,7 @@ def log_loop(filter, chain: str, address: str, poll: int, cb: CB):
     while True:
         # `event` is of type `EventData`.
         for event in filter.get_new_entries():
-            retry(cb, chain, address, event)
+            retry(cb, chain, address, event, save_block_index=False)
 
         gevent.sleep(poll)
 

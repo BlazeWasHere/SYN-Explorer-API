@@ -7,7 +7,7 @@
 		  https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import Dict, List, Literal, TypedDict, DefaultDict
+from typing import Dict, List, Literal, TypedDict, DefaultDict, cast
 from collections import defaultdict
 from enum import Enum
 import json
@@ -30,9 +30,8 @@ load_dotenv(find_dotenv('.env.sample'))
 # If `.env` exists, let it override the sample env file.
 load_dotenv(override=True)
 
-ERC20_BARE_ABI = """[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]"""
+ERC20_BARE_ABI = """[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]"""
 BASEPOOL_ABI = """[{"inputs":[{"internalType":"uint8","name":"index","type":"uint8"}],"name":"getToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getAdminBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getVirtualPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]"""
-TRANSFER_ABI = """[{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]"""
 
 _abis_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'abis')
 with open(os.path.join(_abis_path, 'bridge.json')) as f:
@@ -140,12 +139,17 @@ else:
     PSQL_URL = os.environ['PSQL_URL']
 
 #PSQL = psycopg_pool.ConnectionPool(PSQL_URL, min_size=2, autocommit=True)
-PSQL = psycopg_pool.ConnectionPool(PSQL_URL)
+if os.getenv('NOLOAD_PSQL') is None:
+    PSQL = psycopg_pool.ConnectionPool(PSQL_URL)
 
-_sql_path = os.path.join(os.getcwd(), 'sql')
-with open(os.path.join(_sql_path, 'transactions.sql')) as f:
-    with PSQL.connection() as conn:
-        conn.execute(f.read())
+    _sql_path = os.path.join(os.getcwd(), 'sql')
+    with open(os.path.join(_sql_path, 'transactions.sql')) as f:
+        with PSQL.connection() as conn:
+            conn.execute(f.read())
+else:
+    # Hack to make the linter happy - though calling a literal should fail
+    # runtime which should be expected.
+    PSQL = cast(psycopg_pool.ConnectionPool, 'foo')
 
 # We use this for processes to interact w/ eachother.
 MESSAGE_QUEUE_REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
@@ -346,6 +350,7 @@ TOKENS = {
         '0x321e7092a180bb43555132ec53aaa65a5bf84251',  # gOHM
         '0xcc5672600b948df4b665d9979357bef3af56b300',  # synFRAX
         '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',  # WETH.e
+        '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',  # avWETH
     ],
     'arbitrum': [
         '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',  # DAI
@@ -432,7 +437,7 @@ def __cb(w3: Web3, chain: str, token: str) -> None:
     })
 
 
-__pool = Pool(size=16)
+__pool = Pool(size=24)
 for chain, tokens in TOKENS.items():
     w3: Web3 = SYN_DATA[chain]['w3']
 

@@ -7,23 +7,23 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import Callable, Dict, cast, List
+from typing import Callable, Dict, Optional, Union, cast, List, overload
+from collections import namedtuple
 import time
 
-from web3.exceptions import LogTopicError, MismatchedABI
 from web3.types import FilterParams, LogReceipt
-from psycopg.errors import UniqueViolation
 from hexbytes import HexBytes
 from web3 import Web3
 import gevent
 
-from explorer.utils.data import BRIDGE_ABI, CHAINS, OLDBRIDGE_ABI, PSQL, \
-    SYN_DATA, LOGS_REDIS_URL, OLDERBRIDGE_ABI, TOKENS_IN_POOL, TOKENS_INFO, \
-    TOPICS, TOPIC_TO_EVENT, TRANSFER_ABI, Direction, CHAINS_REVERSED
-from explorer.utils.helpers import convert, address_to_pool, search_logs, \
-    retry
+from explorer.utils.data import BRIDGE_ABI, CHAINS, PSQL, SYN_DATA, \
+    LOGS_REDIS_URL, TOKENS_IN_POOL, TOKENS_INFO, TOPICS, TOPIC_TO_EVENT, \
+    Direction, CHAINS_REVERSED
+from explorer.utils.helpers import convert, find_same_token_across_chain, \
+    retry, search_logs, token_address_to_pool, iterate_receipt_logs
+from explorer.utils.database import Transaction, LostTransaction
 
-# Start blocks of the 4pool ~>=Nov-7th-2021 apart from ethereum.
+# Start blocks of the 4pool >=Nov-7th-2021 apart from ethereum.
 _start_blocks = {
     'ethereum': 13136427,  # nUSD pool
     'arbitrum': 2876718,  # nUSD pool
@@ -37,6 +37,7 @@ _start_blocks = {
     'optimism': 30819,  # nETH pool
 }
 
+WETH = HexBytes('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
 MAX_BLOCKS = 5000
 
 OUT_SQL = """
@@ -97,27 +98,105 @@ VALUES
 """
 
 
-# REF: https://github.com/synapsecns/synapse-contracts/blob/master/contracts/bridge/SynapseBridge.sol#L63-L129
+class Events(object):
+    # OUT EVENTS
+    @classmethod
+    def TokenDepositAndSwap(cls, args):
+        x = namedtuple('x', ['to', 'chain_id', 'token_idx_to'])
+        return x(HexBytes(args['to']), args['chainId'], args['tokenIndexTo'])
+
+    TokenRedeemAndSwap = TokenDepositAndSwap
+
+    @classmethod
+    def TokenDeposit(cls, args):
+        x = namedtuple('x', ['to', 'chain_id', 'sent_token', 'sent_value'])
+        return x(HexBytes(args['to']), args['chainId'], args['token'],
+                 args['amount'])
+
+    @classmethod
+    def TokenRedeemAndRemove(cls, args):
+        x = namedtuple('x', ['to', 'chain_id', 'token_idx_to'])
+        return x(HexBytes(args['to']), args['chainId'], args['swapTokenIndex'])
+
+    @classmethod
+    def TokenRedeem(cls, args):
+        x = namedtuple('x', ['to', 'chain_id', 'token'])
+        return x(HexBytes(args['to']), args['chainId'], args['token'])
+
+    # IN EVENTS
+    @classmethod
+    def TokenWithdrawAndRemove(cls, args):
+        x = namedtuple('x',
+                       ['to', 'fee', 'token_idx_to', 'swap_success', 'token'])
+        return x(HexBytes(args['to']), args['fee'], args['swapTokenIndex'],
+                 args['swapSuccess'], args['token'])
+
+    @classmethod
+    def TokenWithdraw(cls, args):
+        x = namedtuple('x', ['to', 'fee', 'token', 'amount'])
+        return x(HexBytes(args['to']), args['fee'], args['token'],
+                 args['amount'])
+
+    TokenMint = TokenWithdraw
+
+    @classmethod
+    def TokenMintAndSwap(cls, args):
+        x = namedtuple('x',
+                       ['to', 'fee', 'token_idx_to', 'swap_success', 'token'])
+        return x(HexBytes(args['to']), args['fee'], args['tokenIndexTo'],
+                 args['swapSuccess'], args['token'])
+
+
+def check_factory(max_value: int):
+    def check(token: HexBytes, received: int) -> bool:
+        return max_value >= received
+
+    return check
+
+
+@overload
 def bridge_callback(chain: str,
                     address: str,
                     log: LogReceipt,
-                    abi: str = BRIDGE_ABI) -> None:
+                    abi: str = BRIDGE_ABI,
+                    save_block_index: bool = True) -> None:
+    ...
+
+
+@overload
+def bridge_callback(
+        chain: str,
+        address: str,
+        log: LogReceipt,
+        abi: str = BRIDGE_ABI,
+        save_block_index: bool = True,
+        testing: bool = False) -> Union[Transaction, LostTransaction]:
+    ...
+
+
+# REF: https://github.com/synapsecns/synapse-contracts/blob/master/contracts/bridge/SynapseBridge.sol#L63-L129
+def bridge_callback(
+        chain: str,
+        address: str,
+        log: LogReceipt,
+        abi: str = BRIDGE_ABI,
+        save_block_index: bool = True,
+        testing: bool = False
+) -> Optional[Union[Transaction, LostTransaction]]:
     w3: Web3 = SYN_DATA[chain]['w3']
     contract = w3.eth.contract(w3.toChecksumAddress(address), abi=abi)
     tx_hash = log['transactionHash']
 
-    timestamp = w3.eth.get_block(
-        log['blockNumber'])['timestamp']  # type: ignore
+    timestamp = w3.eth.get_block(log['blockNumber'])
+    timestamp = timestamp['timestamp']  # type: ignore
     tx_info = w3.eth.get_transaction(tx_hash)
+    assert 'from' in tx_info  # Make mypy happy - look key 'from' exists!
     from_chain = CHAINS_REVERSED[chain]
-    # Default value of 'nusd', although it gets overwritten later on.
-    pool = 'nusd'
 
     # The info before wrapping the asset can be found in the receipt.
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash,
                                                   timeout=10,
                                                   poll_latency=0.5)
-    do_search_logs = True
 
     topic = cast(str, convert(log['topics'][0]))
     if topic not in TOPICS:
@@ -126,196 +205,161 @@ def bridge_callback(chain: str,
     event = TOPIC_TO_EVENT[topic]
     direction = TOPICS[topic]
 
+    args = contract.events[event]().processLog(log)['args']
+
     if direction == Direction.OUT:
-        # Info is stored in the first log.
-        _log = receipt['logs'][0]
-        _token = w3.eth.contract(_log['address'], abi=TRANSFER_ABI)
-
-        # For OUT transactions the bridged asset
-        # and its amount are stored in the logs data
-        try:
-            data = contract.events[event]().processLog(log)
-        except LogTopicError:
-            if abi == OLDERBRIDGE_ABI:
-                raise TypeError(log, chain)
-            elif abi == OLDBRIDGE_ABI:
-                abi = OLDERBRIDGE_ABI
-            elif abi == BRIDGE_ABI:
-                abi = OLDBRIDGE_ABI
-            else:
-                raise RuntimeError(f'sanity check? got invalid abi: {abi}')
-
-            return bridge_callback(chain, address, log, abi)
-
-        args = data['args']  # type: ignore
+        # Info on the sent token is stored in the first log.
+        first_log = receipt['logs'][0]
         to_chain = CHAINS[args['chainId']]
+        sent_token_address = HexBytes(first_log['address'])
+        sent_token = TOKENS_INFO[chain][sent_token_address.hex()]
 
-        if 'pool' in args:
-            # Some pools during testing - disregard these txs.
-            if ('0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89' == args['pool']
-                    and chain == 'optimism'):
-                return
-            elif ('0x11dB9cb06f98fA2bE027589B5D5734ca0D4E46BA' == args['pool']
-                  and chain == 'boba'):
-                return
-            pool = address_to_pool(chain, args['pool'])
+        # TODO: test WETH transfers on other chains.
+        if sent_token['symbol'] != 'WETH' and chain == 'ethereum':
+            ret = sent_token['_contract'].events.Transfer()
+            ret = ret.processLog(first_log)
+            sent_value = ret['args']['value']
         else:
-            # Find out if its an '*ETH' token.
-            if 'token' in args:
-                token = args['token'].lower()
-                if 'eth' in TOKENS_INFO[chain][token]['symbol'].lower():
-                    pool = 'neth'
+            # Deposit (index_topic_1 address dst, uint256 wad)
+            sent_value = int(first_log['data'], 16)
 
-        pool_tokens = TOKENS_IN_POOL[to_chain][pool]
+        if event in ['TokenDepositAndSwap', 'TokenRedeemAndSwap']:
+            data = Events.TokenDepositAndSwap(args)
 
-        if event not in [
-                'TokenRedeem',
-                'TokenRedeemAndRemove',
-                'TokenDeposit',
-                'TokenDepositAndSwap',
-        ]:
-            received_token = pool_tokens[args['tokenIndexTo']]
-            sent_token = _log['address']
-        elif event in ['TokenRedeem', 'TokenDeposit', 'TokenDepositAndSwap']:
-            received_token = sent_token = args['token']
+            # args['token'] = the nexus asset.
+            pool = token_address_to_pool(chain, args['token'])
+            received_token = TOKENS_IN_POOL[to_chain][pool][data.token_idx_to]
+            received_token = HexBytes(received_token)
+        elif event == 'TokenDeposit':
+            data = Events.TokenDeposit(args)
 
-            if event == 'TokenDepositAndSwap':
-                if 'ETH' in TOKENS_INFO[chain][sent_token.lower()]['name']:
-                    pool_tokens = TOKENS_IN_POOL[to_chain]['neth']
-
-                received_token = pool_tokens[args['tokenIndexTo']]
-
-            do_search_logs = False
+            received_token = find_same_token_across_chain(
+                chain,
+                to_chain,
+                data.sent_token,
+            )
         elif event == 'TokenRedeemAndRemove':
-            received_token = pool_tokens[args['swapTokenIndex']]
-            sent_token = args['token']
+            data = Events.TokenRedeemAndRemove(args)
+
+            pool = token_address_to_pool(chain, args['token'])
+            received_token = TOKENS_IN_POOL[to_chain][pool][data.token_idx_to]
+            received_token = HexBytes(received_token)
+        elif event == 'TokenRedeem':
+            data = Events.TokenRedeem(args)
+
+            if data.chain_id == 1:
+                # WETH on mainnet.
+                received_token = WETH
+            else:
+                received_token = find_same_token_across_chain(
+                    chain,
+                    to_chain,
+                    data.token,
+                )
         else:
             raise RuntimeError(
-                f'did not converge on OUT, {event}, {tx_hash.hex()}, {chain}')
+                f'did not converge OUT event: {event} {tx_hash.hex()} {chain}'
+                f' args: {args}')
 
-        if do_search_logs:
-            try:
-                _data = _token.events['Transfer']().processLog(_log)['args']
-            except MismatchedABI:
-                # Info was not stored in the first log :/
-                _data = search_logs(w3, receipt, sent_token)
-                if _data is None:
-                    raise RuntimeError(
-                        f'did not converge OUT, {event} {chain} {tx_hash.hex()}'
-                        f' receipt: {receipt}\n{args} {sent_token}')
-
-            value = _data['value']
-        else:
-            value = args['amount']
+        if testing:
+            return Transaction(tx_hash, None, HexBytes(tx_info['from']),
+                               data.to, sent_value, None, True, from_chain,
+                               data.chain_id, timestamp, None,
+                               sent_token_address, received_token, None)
 
         with PSQL.connection() as conn:
             conn.autocommit = True
             with conn.cursor() as c:
-                c.execute(OUT_SQL, (
-                    tx_hash,
-                    HexBytes(tx_info['from']),
-                    HexBytes(args['to']),
-                    value,
-                    from_chain,
-                    args['chainId'],
-                    timestamp,
-                    HexBytes(sent_token),
-                    HexBytes(received_token),
-                ))
+                c.execute(OUT_SQL,
+                          (tx_hash, HexBytes(tx_info['from']), data.to,
+                           sent_value, from_chain, data.chain_id, timestamp,
+                           sent_token_address, received_token))
     elif direction == Direction.IN:
-        # For IN transactions the bridged asset
-        # and its amount are stored in the tx.input
-        # All IN transactions are guaranteed to be
-        # from validators to Bridge contract
-        _, args = contract.decode_function_input(
-            tx_info['input'])  # type: ignore
+        received_value = None
 
-        swap_success = args.get('swapSuccess', None)
+        if event in ['TokenWithdrawAndRemove', 'TokenMintAndSwap']:
+            if event == 'TokenWithdrawAndRemove':
+                data = Events.TokenWithdrawAndRemove(args)
+            elif event == 'TokenMintAndSwap':
+                data = Events.TokenMintAndSwap(args)
+            else:
+                # Will NEVER reach here - comprendo mypy???
+                raise
 
-        if 'pool' in args:
-            # Some pools during testing - disregard these txs.
-            if ('0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89' == args['pool']
-                    and chain == 'optimism'):
-                return
-            elif ('0x11dB9cb06f98fA2bE027589B5D5734ca0D4E46BA' == args['pool']
-                  and chain == 'boba'):
-                return
+            pool = token_address_to_pool(chain, data.token)
+            pool = TOKENS_IN_POOL[chain][pool]
 
-            pool = address_to_pool(chain, args['pool'])
+            if data.swap_success:
+                received_token = pool[data.token_idx_to]
+            elif chain == 'ethereum':
+                # nUSD (eth) - nexus assets are not in eth pools.
+                received_token = '0x1b84765de8b7566e4ceaf4d0fd3c5af52d3dde4f'
+            else:
+                received_token = pool[0]
 
-        if event not in [
-                'TokenWithdraw', 'TokenMint', 'TokenWithdrawAndRemove'
-        ]:
-            received_token = TOKENS_IN_POOL[chain][pool][args['tokenIndexTo']]
-        elif event == 'TokenWithdrawAndRemove':
-            received_token = TOKENS_IN_POOL[chain][pool][
-                args['swapTokenIndex']]
+            received_token = HexBytes(received_token)
+            swap_success = data.swap_success
+        elif event in ['TokenWithdraw', 'TokenMint']:
+            data = Events.TokenWithdraw(args)
+
+            received_token = HexBytes(data.token)
+            swap_success = None
+
+            if event == 'TokenWithdraw':
+                received_value = data.amount - data.fee
         else:
-            received_token = args['token']
-            do_search_logs = False
+            raise RuntimeError(
+                f'did not converge event IN: {event} {tx_hash.hex()} {chain} '
+                f'args: {args}')
 
-        if do_search_logs:
-            _data = search_logs(w3, receipt, received_token)
-            if _data is None or not swap_success:
-                # Sometimes swap fails and the user received a nexus asset
-                # instead, so search for the nexus asset (nETH, nUSD).
-                if chain == 'ethereum':
-                    # Nexus assets aren't in eth pools.
-                    received_token = '0x1b84765de8b7566e4ceaf4d0fd3c5af52d3dde4f'
-                else:
-                    received_token = TOKENS_IN_POOL[chain][pool][0]
+        if received_value is None:
+            received_value = search_logs(chain, receipt,
+                                         received_token)['value']
 
-                _data = search_logs(w3, receipt, received_token)
-                if _data is None:
-                    raise RuntimeError(
-                        f'did not converge IN, {event} {chain} {tx_hash.hex()}'
-                        f' receipt: {receipt}\n{args} {received_token}')
-
-            value = str(_data['value'])
-        else:
-            value = args['amount']
-
-        with PSQL.connection() as conn:
-            conn.autocommit = True
-            with conn.cursor() as c:
-                run_lost_sql = False
-                params = (
-                    tx_hash,
-                    value,
-                    timestamp,
-                    swap_success,
-                    HexBytes(args['to']),
-                    HexBytes(received_token),
-                    from_chain,
+        if event == 'TokenMint':
+            # emit TokenMint(to, token, amount.sub(fee), fee, kappa);
+            if received_value != data.amount:  # type: ignore
+                received_token, received_value = iterate_receipt_logs(
+                    receipt,
+                    check_factory(data.amount)  # type: ignore
                 )
 
-                try:
-                    c.execute(IN_SQL, params)
-                except:
-                    run_lost_sql = True
-                    raise
-                finally:
-                    # No rows got updated: means that there was no
-                    # corresponding OUT tx.
-                    if c.rowcount == 0 or run_lost_sql:
-                        c.execute(
-                            LOST_IN_SQL,
-                            (tx_hash, HexBytes(args['to']), value, from_chain,
-                             timestamp, HexBytes(received_token), swap_success,
-                             str(args['fee'])))
-                    else:
-                        if c.rowcount != 1:
-                            raise RuntimeError(
-                                f'{c._last_query} | {params} affected '
-                                f'{c.rowcount} not 1')
+        # Must equal to False rather than eval to False since None is falsy.
+        if swap_success == False:
+            # The `received_value` we get earlier would be the initial bridged
+            # amount without the fee excluded.
+            received_value -= data.fee
 
-    else:
-        raise RuntimeError(f'sanity check? got {direction}')
+        if testing:
+            return LostTransaction(tx_hash, data.to, received_value,
+                                   from_chain, timestamp, received_token,
+                                   swap_success, data.fee)
 
-    LOGS_REDIS_URL.set(f'{chain}:logs:{address}:MAX_BLOCK_STORED',
-                       log['blockNumber'])
-    LOGS_REDIS_URL.set(f'{chain}:logs:{address}:TX_INDEX',
-                       log['transactionIndex'])
+        params = (tx_hash, received_value, timestamp, swap_success, data.to,
+                  received_token, from_chain)
+
+        with PSQL.connection() as conn:
+            conn.autocommit = True
+            with conn.cursor() as c:
+                c.execute(IN_SQL, params)
+
+                if c.rowcount == 0:
+                    c.execute(
+                        LOST_IN_SQL,
+                        (tx_hash, data.to, received_value, from_chain,
+                         timestamp, received_token, swap_success, data.fee))
+                else:
+                    if c.rowcount != 1:
+                        # TODO: Rollback here?
+                        raise RuntimeError(
+                            f'`IN_SQL` with args {params}, affected {c.rowcount}'
+                            f' {tx_hash.hex()} {chain}')
+
+    if save_block_index:
+        LOGS_REDIS_URL.set(f'{chain}:logs:{address}:MAX_BLOCK_STORED',
+                           log['blockNumber'])
+        LOGS_REDIS_URL.set(f'{chain}:logs:{address}:TX_INDEX',
+                           log['transactionIndex'])
 
 
 def get_logs(

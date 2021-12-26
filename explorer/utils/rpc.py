@@ -247,15 +247,11 @@ def bridge_callback(
         elif event == 'TokenRedeem':
             data = Events.TokenRedeem(args)
 
-            if data.chain_id == 1:
-                # WETH on mainnet.
-                received_token = WETH
-            else:
-                received_token = find_same_token_across_chain(
-                    chain,
-                    to_chain,
-                    data.token,
-                )
+            received_token = find_same_token_across_chain(
+                chain,
+                to_chain,
+                data.token,
+            )
         else:
             raise RuntimeError(
                 f'did not converge OUT event: {event} {tx_hash.hex()} {chain}'

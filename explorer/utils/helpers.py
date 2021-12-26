@@ -205,6 +205,12 @@ def find_same_token_across_chain(chain: str, to_chain: str,
     token = token.lower()
     from_token = TOKENS_INFO[chain][token]
 
+    if 'ETH' in from_token['name']:
+        for _token, v in TOKENS_INFO[to_chain].items():
+            if (v['decimals'] == from_token['decimals']
+                    and v['symbol'] in ['WETH', 'nETH']):
+                return HexBytes(_token)
+
     for _token, v in TOKENS_INFO[to_chain].items():
         if (v['decimals'] == from_token['decimals']
                 and v['symbol'] == from_token['symbol']):

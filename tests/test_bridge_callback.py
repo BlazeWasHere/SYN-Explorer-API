@@ -26,6 +26,35 @@ def rpcs() -> Dict[str, Web3]:
     return {k: Web3(Web3.HTTPProvider(v['rpc'])) for k, v in SYN_DATA.items()}
 
 
+def test_polygon_usdc_out(rpcs: Dict[str, Web3]) -> None:
+    log = polygon_get_log(
+        rpcs['polygon'],
+        '0x505cb620a31c9bb1893f74b5d405c652e3a302115262b4c5e6e439860319b4cf',
+    )
+
+    expected = Transaction(
+        from_tx_hash=HexBytes(
+            '0x081c9187ad515a873102bf3575fc72b8faf46b2905c4c17ba76bff72503aa6d0'
+        ),
+        to_tx_hash=None,
+        from_address=HexBytes('0xaaaa701efea3ac6b184628ed104f827014641592'),
+        to_address=HexBytes('0xaaaa701efea3ac6b184628ed104f827014641592'),
+        sent_value=20000000,
+        received_value=None,
+        pending=True,
+        from_chain_id=137,
+        to_chain_id=250,
+        sent_time=1640682515,
+        received_time=None,
+        sent_token=HexBytes('0x2791bca1f2de4661ed88a30c99a7a9449aa84174'),
+        received_token=HexBytes('0x04068da6c83afcfa0e13ba15a6696662335d5b75'),
+        swap_success=None,
+    )
+
+    ret = polygon_bridge_cb(log)
+    assert ret == expected
+
+
 def test_polygon_gohm_in(rpcs: Dict[str, Web3]) -> None:
     log = polygon_get_log(
         rpcs['polygon'],

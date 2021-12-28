@@ -7,7 +7,7 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import Callable, Dict, Optional, Union, cast, List, overload
+from typing import Callable, Dict, Optional, Tuple, Union, cast, List, overload
 from collections import namedtuple
 import time
 
@@ -208,20 +208,41 @@ def bridge_callback(
     args = contract.events[event]().processLog(log)['args']
 
     if direction == Direction.OUT:
-        # Info on the sent token is stored in the first log.
-        first_log = receipt['logs'][0]
-        to_chain = CHAINS[args['chainId']]
-        sent_token_address = HexBytes(first_log['address'])
-        sent_token = TOKENS_INFO[chain][sent_token_address.hex()]
 
-        # TODO: test WETH transfers on other chains.
-        if sent_token['symbol'] != 'WETH' and chain == 'ethereum':
-            ret = sent_token['_contract'].events.Transfer()
-            ret = ret.processLog(first_log)
-            sent_value = ret['args']['value']
-        else:
-            # Deposit (index_topic_1 address dst, uint256 wad)
-            sent_value = int(first_log['data'], 16)
+        def get_sent_info(_log: LogReceipt) -> Optional[Tuple[HexBytes, int]]:
+            if _log['address'].lower() not in TOKENS_INFO[chain]:
+                return None
+
+            sent_token_address = HexBytes(_log['address'])
+            sent_token = TOKENS_INFO[chain][sent_token_address.hex()]
+
+            # TODO: test WETH transfers on other chains.
+            if sent_token['symbol'] != 'WETH' and chain == 'ethereum':
+                ret = sent_token['_contract'].events.Transfer()
+                ret = ret.processLog(_log)
+                sent_value = ret['args']['value']
+            else:
+                # Deposit (index_topic_1 address dst, uint256 wad)
+                sent_value = int(_log['data'], 16)
+
+            return sent_token_address, sent_value
+
+        sent_token_address = sent_value = None
+        to_chain = CHAINS[args['chainId']]
+
+        for _log in receipt['logs']:
+            ret = get_sent_info(_log)
+
+            if ret is not None:
+                sent_token_address, sent_value = ret
+                break
+
+        if sent_token_address is None or sent_value is None:
+            raise RuntimeError(
+                f'did not find sent_token_address or sent_value got: ',
+                sent_token_address,
+                sent_value,
+            )
 
         if event in ['TokenDepositAndSwap', 'TokenRedeemAndSwap']:
             data = Events.TokenDepositAndSwap(args)

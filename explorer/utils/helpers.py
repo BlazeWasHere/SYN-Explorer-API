@@ -120,9 +120,8 @@ def dispatch_get_logs(
     address_key: str = 'bridge',
     join_all: bool = True,
 ) -> Optional[List[Greenlet]]:
-    from explorer.utils.rpc import get_logs, TOPICS
+    from explorer.utils.rpc import get_logs
 
-    topics = topics or list(TOPICS)
     jobs: List[Greenlet] = []
 
     for chain in SYN_DATA:
@@ -139,7 +138,6 @@ def dispatch_get_logs(
                              cb,
                              address,
                              max_blocks=1024,
-                             topics=topics,
                              key_namespace=key_namespace))
         elif chain in ['boba', 'bsc']:
             jobs.append(
@@ -148,7 +146,6 @@ def dispatch_get_logs(
                              cb,
                              address,
                              max_blocks=512,
-                             topics=topics,
                              key_namespace=key_namespace))
         elif chain == 'polygon':
             jobs.append(
@@ -157,7 +154,6 @@ def dispatch_get_logs(
                              cb,
                              address,
                              max_blocks=2048,
-                             topics=topics,
                              key_namespace=key_namespace))
         else:
             jobs.append(
@@ -165,7 +161,6 @@ def dispatch_get_logs(
                              chain,
                              cb,
                              address,
-                             topics=topics,
                              key_namespace=key_namespace))
 
     if join_all:
@@ -175,15 +170,15 @@ def dispatch_get_logs(
 
 
 def retry(func: Callable[..., T], *args, **kwargs) -> Optional[T]:
-    attempts = kwargs.pop('attempts', 3)
+    attempts: int = kwargs.pop('attempts', 3)
 
-    for _ in range(attempts):
+    for i in range(attempts):
         try:
             return func(*args, **kwargs)
         except Exception:
-            print(f'retry attempt {_}, args: {args}')
+            print(f'retry attempt {i}, args: {args}')
             traceback.print_exc()
-            gevent.sleep(2**_)
+            gevent.sleep(5**i)
 
     logging.critical(f'maximum retries ({attempts}) reached')
 
@@ -204,6 +199,10 @@ def find_same_token_across_chain(chain: str, to_chain: str,
                                  token: str) -> HexBytes:
     token = token.lower()
     from_token = TOKENS_INFO[chain][token]
+
+    if from_token['symbol'] == 'synFRAX' and to_chain == 'ethereum':
+        # FRAX
+        return HexBytes('0x853d955acef822db058eb8505911ed77f175b99e')
 
     if 'ETH' in from_token['name']:
         for _token, v in TOKENS_INFO[to_chain].items():

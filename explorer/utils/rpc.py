@@ -23,9 +23,9 @@ from explorer.utils.helpers import convert, find_same_token_across_chain, \
     retry, search_logs, token_address_to_pool, iterate_receipt_logs
 from explorer.utils.database import Transaction, LostTransaction
 
-# Start blocks of the 4pool >=Nov-7th-2021 apart from ethereum.
+# Start blocks of the 4pool >=Nov-7th-2021.
 _start_blocks = {
-    'ethereum': 13136427,  # nUSD pool
+    'ethereum': 13566427,
     'arbitrum': 2876718,  # nUSD pool
     'avalanche': 6619002,  # nUSD pool
     'bsc': 12431591,  # nUSD pool
@@ -358,19 +358,26 @@ def bridge_callback(
         with PSQL.connection() as conn:
             conn.autocommit = True
             with conn.cursor() as c:
-                c.execute(IN_SQL, params)
+                try:
+                    c.execute(IN_SQL, params)
 
-                if c.rowcount == 0:
+                    if c.rowcount == 0:
+                        c.execute(LOST_IN_SQL,
+                                  (tx_hash, data.to, received_value,
+                                   from_chain, timestamp, received_token,
+                                   swap_success, data.fee))
+                    else:
+                        if c.rowcount != 1:
+                            # TODO: Rollback here?
+                            raise RuntimeError(
+                                f'`IN_SQL` with args {params}, affected {c.rowcount}'
+                                f' {tx_hash.hex()} {chain}')
+                except Exception as e:
+                    print(e)
                     c.execute(
                         LOST_IN_SQL,
                         (tx_hash, data.to, received_value, from_chain,
                          timestamp, received_token, swap_success, data.fee))
-                else:
-                    if c.rowcount != 1:
-                        # TODO: Rollback here?
-                        raise RuntimeError(
-                            f'`IN_SQL` with args {params}, affected {c.rowcount}'
-                            f' {tx_hash.hex()} {chain}')
 
     if save_block_index:
         LOGS_REDIS_URL.set(f'{chain}:logs:{address}:MAX_BLOCK_STORED',

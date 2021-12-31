@@ -39,7 +39,7 @@ assert b != c, '_session_cache size did not change'
 assert c == n, 'new _session_cache size is not what we set it to'
 
 gevent.spawn(poll.start, bridge_callback)
-#gevent.spawn(dispatch_get_logs, bridge_callback)
+gevent.spawn(dispatch_get_logs, bridge_callback)
 
 
 class HexConverter(BaseConverter):

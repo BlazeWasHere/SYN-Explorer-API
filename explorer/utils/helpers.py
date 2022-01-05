@@ -205,6 +205,10 @@ def find_same_token_across_chain(chain: str, to_chain: str,
         return HexBytes('0x853d955acef822db058eb8505911ed77f175b99e')
 
     if 'ETH' in from_token['name']:
+        if to_chain == 'avalanche':
+            # WETH.e
+            return HexBytes('0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab')
+
         for _token, v in TOKENS_INFO[to_chain].items():
             if (v['decimals'] == from_token['decimals']
                     and v['symbol'] in ['WETH', 'nETH']):

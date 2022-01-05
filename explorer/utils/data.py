@@ -331,6 +331,7 @@ TOKENS = {
         '0x130025ee738a66e691e6a7a62381cb33c6d9ae83',  # JUMP
         '0x0fe9778c005a5a6115cbe12b0568a2d50b765a51',  # NFD
         '0xc13b7a43223bb9bf4b69bd68ab20ca1b79d81c75',  # JGN
+        '0x88918495892baf4536611e38e75d771dc6ec0863',  # gOHM
     ],
     'polygon': [
         '0xf8f9efc0db77d8881500bb06ff5d6abc3070e695',  # SYN
@@ -343,6 +344,7 @@ TOKENS = {
         '0xd8ca34fd379d9ca3c6ee3b3905678320f5b45195',  # gOHM
         '0xeee3371b89fc43ea970e908536fcddd975135d8a',  # DOG
         '0x48a34796653afdaa1647986b33544c911578e767',  # synFRAX
+        '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',  # WETH
     ],
     'avalanche': [
         '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',  # DAI
@@ -355,8 +357,7 @@ TOKENS = {
         '0x19e1ae0ee35c0404f835521146206595d37981ae',  # nETH
         '0x321e7092a180bb43555132ec53aaa65a5bf84251',  # gOHM
         '0xcc5672600b948df4b665d9979357bef3af56b300',  # synFRAX
-        '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',  # WETH.e
-        '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',  # avWETH
+        '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',  # avWETH 
     ],
     'arbitrum': [
         '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',  # DAI
@@ -389,8 +390,9 @@ TOKENS = {
         '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',  # 1USDT
         '0xed2a7edd7413021d440b09d654f3b87712abab66',  # nUSD
         '0xcf664087a5bb0237a0bad6742852ec6c8d69a27a',  # ONE
-        '0xfa7191d292d5633f702b0bd7e3e3bccc0e633200',  # synFRAX
-        '0x1852f70512298d56e9c8fdd905e02581e04ddb2a',  # synFRAX old
+        '0x1852f70512298d56e9c8fdd905e02581e04ddb2a',  # synFRAX
+        '0xfa7191d292d5633f702b0bd7e3e3bccc0e633200',  # old synFRAX
+        '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # gOHM
     ],
     'boba': [
         '0x66a2a913e447d6b4bf33efbec43aaef87890fbbc',  # USDC
@@ -401,6 +403,7 @@ TOKENS = {
         '0x6b4712ae9797c199edd44f897ca09bc57628a1cf',  # nUSD
         '0xf74195bb8a5cf652411867c5c2c5b8c2a402be35',  # DAI
         '0xd203de32170130082896b4111edf825a4774c18e',  # WETH
+        '0xd22c0a4af486c7fa08e282e9eb5f30f9aaa62c95',  # gOHM
     ],
     'moonriver': [
         '0xd80d8688b02b3fd3afb81cdb124f188bb5ad0445',  # SYN
@@ -414,6 +417,7 @@ TOKENS = {
         '0x121ab82b49b2bc4c7901ca46b8277962b4350204',  # WETH
     ],
     'aurora': [
+        '0xd80d8688b02b3fd3afb81cdb124f188bb5ad0445',  # SYN
         '0xb12bfca5a55806aaf64e99521918a4bf0fc40802',  # USDC
         '0x4988a896b1227218e4a686fde5eabdcabd91571f',  # USDT
         '0x07379565cd8b0cae7c60dc78e7f601b34af2a21c',  # nUSD

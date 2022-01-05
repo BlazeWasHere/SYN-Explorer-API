@@ -51,10 +51,11 @@ INSERT into
         to_chain_id,
         sent_time,
         sent_token,
-        received_token
+        received_token,
+        kappa
     )
 VALUES
-    (%s, %s, %s, %s, %s, %s, %s, %s, %s);
+    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
 """
 
 IN_SQL = """
@@ -66,19 +67,18 @@ SET
         received_value,
         pending,
         received_time,
+        received_token,
         swap_success
     ) = (
         %s,
         %s,
         false,
         %s,
+        %s,
         %s
     )
 WHERE
-    to_address = %s
-    AND pending = true
-    AND received_token = %s
-    AND to_chain_id = %s;
+    kappa = %s;
 """
 
 LOST_IN_SQL = """
@@ -91,7 +91,7 @@ INSERT into
         received_time,
         received_token,
         swap_success,
-        fee
+        kappa
     )
 VALUES
     (%s, %s, %s, %s, %s, %s, %s, %s);
@@ -187,6 +187,7 @@ def bridge_callback(
     contract = w3.eth.contract(w3.toChecksumAddress(address), abi=abi)
     tx_hash = log['transactionHash']
 
+    kappa = w3.keccak(text=tx_hash.hex())
     timestamp = w3.eth.get_block(log['blockNumber'])
     timestamp = timestamp['timestamp']  # type: ignore
     tx_info = w3.eth.get_transaction(tx_hash)
@@ -285,12 +286,11 @@ def bridge_callback(
                                sent_token_address, received_token, None)
 
         with PSQL.connection() as conn:
-            conn.autocommit = True
             with conn.cursor() as c:
                 c.execute(OUT_SQL,
                           (tx_hash, HexBytes(tx_info['from']), data.to,
                            sent_value, from_chain, data.chain_id, timestamp,
-                           sent_token_address, received_token))
+                           sent_token_address, received_token, kappa))
     elif direction == Direction.IN:
         received_value = None
 
@@ -352,8 +352,8 @@ def bridge_callback(
                                    from_chain, timestamp, received_token,
                                    swap_success, data.fee)
 
-        params = (tx_hash, received_value, timestamp, swap_success, data.to,
-                  received_token, from_chain)
+        params = (tx_hash, received_value, timestamp, received_token,
+                  swap_success, kappa)
 
         with PSQL.connection() as conn:
             conn.autocommit = True
@@ -365,7 +365,7 @@ def bridge_callback(
                         c.execute(LOST_IN_SQL,
                                   (tx_hash, data.to, received_value,
                                    from_chain, timestamp, received_token,
-                                   swap_success, data.fee))
+                                   swap_success, args['kappa']))
                     else:
                         if c.rowcount != 1:
                             # TODO: Rollback here?
@@ -374,10 +374,10 @@ def bridge_callback(
                                 f' {tx_hash.hex()} {chain}')
                 except Exception as e:
                     print(e)
-                    c.execute(
-                        LOST_IN_SQL,
-                        (tx_hash, data.to, received_value, from_chain,
-                         timestamp, received_token, swap_success, data.fee))
+                    c.execute(LOST_IN_SQL,
+                              (tx_hash, data.to, received_value, from_chain,
+                               timestamp, received_token, swap_success,
+                               args['kappa']))
 
     if save_block_index:
         LOGS_REDIS_URL.set(f'{chain}:logs:{address}:MAX_BLOCK_STORED',

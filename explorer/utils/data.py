@@ -96,6 +96,11 @@ SYN_DATA = {
         "bridge": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
         "nethpool": "0xe27bff97ce92c3e1ff7aa9f86781fdd6d48f5ee9",
     },
+    "aurora": {
+        "rpc": os.getenv('AURORA_RPC'),
+        "bridge": "0xaed5b25be1c3163c907a471082640450f928ddfe",
+        "nusdpool": "0xcef6c2e20898c2604886b888552ca6ccf66933b0",
+    },
 }
 
 # Init 'func' to append `contract` to SYN_DATA so we can call the ABI simpler later.
@@ -169,6 +174,7 @@ CHAINS = {
     288: 'boba',
     1285: 'moonriver',
     10: 'optimism',
+    1313161554: 'aurora',
 }
 
 CHAINS_REVERSED = {v: k for k, v in CHAINS.items()}
@@ -406,6 +412,11 @@ TOKENS = {
         '0x809dc529f07651bd43a172e8db6f4a7a0d771036',  # nETH
         '0x5a5fff6f753d7c11a56a52fe47a177a87e431655',  # SYN
         '0x121ab82b49b2bc4c7901ca46b8277962b4350204',  # WETH
+    ],
+    'aurora': [
+        '0xb12bfca5a55806aaf64e99521918a4bf0fc40802',  # USDC
+        '0x4988a896b1227218e4a686fde5eabdcabd91571f',  # USDT
+        '0x07379565cd8b0cae7c60dc78e7f601b34af2a21c',  # nUSD
     ],
 }
 

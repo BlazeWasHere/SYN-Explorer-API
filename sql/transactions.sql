@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS txs (
     sent_token bytea NOT NULL,
     received_token bytea,
     swap_success boolean,
+    kappa bytea UNIQUE NOT NULL,
     CONSTRAINT to_tx_hash_key UNIQUE (to_tx_hash) DEFERRABLE INITIALLY IMMEDIATE
 );
 
@@ -24,11 +25,9 @@ CREATE TABLE IF NOT EXISTS lost_txs (
     received_time bigint NOT NULL,
     received_token bytea NOT NULL,
     swap_success boolean,
-    fee varchar NOT NULL
+    kappa bytea UNIQUE NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_from_address ON txs(from_address);
 
 CREATE INDEX IF NOT EXISTS idx_to_address ON txs(to_address);
-
-CREATE INDEX IF NOT EXISTS idx_lost_to_address on lost_txs(to_address);

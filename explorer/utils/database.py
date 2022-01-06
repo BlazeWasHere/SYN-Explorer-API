@@ -58,7 +58,7 @@ class LostTransaction(Base):
     received_time: int
     received_token: HexBytes
     swap_success: Optional[bool]
-    fee: int
+    kappa: HexBytes
 
 
 @dataclass
@@ -77,6 +77,7 @@ class Transaction(Base):
     sent_token: HexBytes
     received_token: Optional[HexBytes]
     swap_success: Optional[bool]
+    kappa: HexBytes
 
     @staticmethod
     def search(column: str, value: Any) -> List["Transaction"]:

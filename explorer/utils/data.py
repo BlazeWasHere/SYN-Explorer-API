@@ -102,6 +102,12 @@ SYN_DATA = {
         "bridge": "0xaed5b25be1c3163c907a471082640450f928ddfe",
         "nusdpool": "0xcef6c2e20898c2604886b888552ca6ccf66933b0",
     },
+    "moonbeam": {
+        "rpc": os.getenv('MOONBEAM_RPC'),
+        "address": "0xf44938b0125a6662f9536281ad2cd6c499f22004",
+        'bridge': '0x84a420459cd31c3c34583f67e0f0fb191067d32f',
+        "minichef": "0xd5609cd0e1675331e4fb1d43207c8d9d83aab17c",
+    }
 }
 
 # Init 'func' to append `contract` to SYN_DATA so we can call the ABI simpler later.
@@ -178,6 +184,7 @@ CHAINS = {
     1285: 'moonriver',
     10: 'optimism',
     1313161554: 'aurora',
+    1284: 'moonbeam',
 }
 
 CHAINS_REVERSED = {v: k for k, v in CHAINS.items()}

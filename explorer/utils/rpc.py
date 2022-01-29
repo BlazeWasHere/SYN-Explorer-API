@@ -36,6 +36,7 @@ _start_blocks = {
     'moonriver': 890949,
     'optimism': 30819,  # nETH pool
     'aurora': 56092179,
+    'moonbeam': 173355,
 }
 
 WETH = HexBytes('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')

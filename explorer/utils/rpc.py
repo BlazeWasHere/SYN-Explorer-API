@@ -284,7 +284,7 @@ def bridge_callback(
             return Transaction(tx_hash, None, HexBytes(tx_info['from']),
                                data.to, sent_value, None, True, from_chain,
                                data.chain_id, timestamp, None,
-                               sent_token_address, received_token, None)
+                               sent_token_address, received_token, None, kappa)
 
         with PSQL.connection() as conn:
             with conn.cursor() as c:
@@ -351,7 +351,7 @@ def bridge_callback(
         if testing:
             return LostTransaction(tx_hash, data.to, received_value,
                                    from_chain, timestamp, received_token,
-                                   swap_success, data.fee)
+                                   swap_success, kappa)
 
         params = (tx_hash, received_value, timestamp, received_token,
                   swap_success, kappa)

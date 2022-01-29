@@ -49,6 +49,9 @@ def test_polygon_usdc_out(rpcs: Dict[str, Web3]) -> None:
         sent_token=HexBytes('0x2791bca1f2de4661ed88a30c99a7a9449aa84174'),
         received_token=HexBytes('0x04068da6c83afcfa0e13ba15a6696662335d5b75'),
         swap_success=None,
+        kappa=HexBytes(
+            '0x46a55625f373fedd797de83417a2a7f5692d84ac039d6458f5b63ce6a189e0f6'
+        ),
     )
 
     ret = polygon_bridge_cb(log)
@@ -71,7 +74,9 @@ def test_polygon_gohm_in(rpcs: Dict[str, Web3]) -> None:
         received_time=1640533438,
         received_token=HexBytes('0xd8ca34fd379d9ca3c6ee3b3905678320f5b45195'),
         swap_success=None,
-        fee=60095853974120,
+        kappa=HexBytes(
+            '0x0e0b80f7b70f97f35b1b5c46d341867e09a01fe9ac053e423e78a2daecb98d5d'
+        ),
     )
 
     ret = polygon_bridge_cb(log)
@@ -94,7 +99,9 @@ def test_eth_weth_in(rpcs: Dict[str, Web3]) -> None:
         received_time=1640536118,
         received_token=HexBytes('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
         swap_success=None,
-        fee=30684004047008938,
+        kappa=HexBytes(
+            '0xedabb871ccd3d796d3e31bab9e543acb218b2d2e3790c8532bc60f85f7ea7e95'
+        ),
     )
 
     ret = eth_bridge_cb(log)
@@ -117,7 +124,9 @@ def test_avalanche_gohm_in(rpcs: Dict[str, Web3]) -> None:
         received_time=1640463136,
         received_token=HexBytes('0x321e7092a180bb43555132ec53aaa65a5bf84251'),
         swap_success=None,
-        fee=500000000000000,
+        kappa=HexBytes(
+            '0xa6b95c5a7c28a0321904a24246736e968512b09ae7b4e4f09b3f41dbbe686fca'
+        ),
     )
 
     ret = avalanche_bridge_cb(log)
@@ -140,7 +149,9 @@ def test_movr_synfrax_in(rpcs: Dict[str, Web3]) -> None:
         received_time=1640385180,
         received_token=HexBytes('0x1a93b23281cc1cde4c4741353f3064709a16197d'),
         swap_success=None,
-        fee=1000000000000000000,
+        kappa=HexBytes(
+            '0xa2413fa5ca2f13ef5b483d8e603854b165186991aa17d0a5e3c38a6e3fabc514'
+        ),
     )
 
     ret = movr_bridge_cb(log)
@@ -163,7 +174,9 @@ def test_polygon_nusd_in_swap_fail(rpcs: Dict[str, Web3]) -> None:
         received_time=1636284211,
         received_token=HexBytes('0xb6c473756050de474286bed418b77aeac39b02af'),
         swap_success=False,
-        fee=79894232700325075147,
+        kappa=HexBytes(
+            '0x13775d055f4cf6f5b149ea563e5675489ae84c41ee47afd88408f50675fc157b'
+        ),
     )
 
     ret = polygon_bridge_cb(log)
@@ -186,7 +199,9 @@ def test_ftm_nusd_in_swap_fail(rpcs: Dict[str, Web3]) -> None:
         received_time=1636283005,
         received_token=HexBytes('0xed2a7edd7413021d440b09d654f3b87712abab66'),
         swap_success=False,
-        fee=4725681421938137373,
+        kappa=HexBytes(
+            '0x902899e03f46f70bf8ee0c60bc937e78b8659be749308f4a0ae12956cc9adc6d'
+        ),
     )
 
     ret = ftm_bridge_cb(log)
@@ -209,7 +224,9 @@ def test_eth_frax_in(rpcs: Dict[str, Web3]) -> None:
         received_time=1640452902,
         received_token=HexBytes('0x853d955acef822db058eb8505911ed77f175b99e'),
         swap_success=None,
-        fee=100000000000000000000,
+        kappa=HexBytes(
+            '0xa13a112dda8f85273bf7d05c45e49ef380697f8218d5fc77a346bf2bfb954952'
+        ),
     )
 
     ret = eth_bridge_cb(log)
@@ -239,6 +256,9 @@ def test_avalanche_weth_out(rpcs: Dict[str, Web3]) -> None:
         sent_token=HexBytes('0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab'),
         received_token=HexBytes('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
         swap_success=None,
+        kappa=HexBytes(
+            '0x129ae4febff07a881aee9955404ac1cb51cd7885273f6243ac75b0efafaf846d'
+        ),
     )
 
     ret = avalanche_bridge_cb(log)
@@ -268,6 +288,9 @@ def test_polygon_nusd_out(rpcs: Dict[str, Web3]) -> None:
         sent_token=HexBytes('0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'),
         received_token=HexBytes('0x6b175474e89094c44da98b954eedeac495271d0f'),
         swap_success=None,
+        kappa=HexBytes(
+            '0x6fbfe48e97ccbe355ce43304a5f7dfb05b67ddde7a475cf2c6829ee381f47b73'
+        ),
     )
 
     ret = polygon_bridge_cb(log)
@@ -297,6 +320,9 @@ def test_bsc_nusd_out(rpcs: Dict[str, Web3]) -> None:
         sent_token=HexBytes('0x55d398326f99059ff775485246999027b3197955'),
         received_token=HexBytes('0xc2132d05d31c914a87c6611c10748aeb04b58e8f'),
         swap_success=None,
+        kappa=HexBytes(
+            '0xd58c0a753235da2aa997250f9bb6b27cc5678f5f247e5e2336992346acf75e00'
+        ),
     )
 
     ret = bsc_bridge_cb(log)
@@ -319,7 +345,9 @@ def test_arb_nusd_in(rpcs: Dict[str, Web3]) -> None:
         received_time=1640366369,
         received_token=HexBytes('0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a'),
         swap_success=True,
-        fee=25000000000000000000,
+        kappa=HexBytes(
+            '0xb3c7ec533fbaeff3a78eae5a36198c3b2a32e2eaa4d476e8a11708c1e483d6a9'
+        ),
     )
 
     ret = arb_bridge_cb(log)
@@ -349,6 +377,9 @@ def test_cb_eth_weth_out(rpcs: Dict[str, Web3]) -> None:
         sent_token=HexBytes('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
         received_token=HexBytes('0x82af49447d8a07e3bd95bd0d56f35241523fbab1'),
         swap_success=None,
+        kappa=HexBytes(
+            '0xa26cb5ed38268297851668a86fecc925b4c5c2679a9becfd646c7da90cf2bdd2'
+        ),
     )
 
     ret = eth_bridge_cb(log)
@@ -378,6 +409,9 @@ def test_cb_eth_gohm_out(rpcs: Dict[str, Web3]) -> None:
         sent_token=HexBytes('0x0ab87046fbb341d058f17cbc4c1133f25a20a52f'),
         received_token=HexBytes('0xd8ca34fd379d9ca3c6ee3b3905678320f5b45195'),
         swap_success=None,
+        kappa=HexBytes(
+            '0x6d4cefc52bc7ea5e1ee62b3266c6f00b2b4551f905a98fa4f3d17bafea860a81'
+        ),
     )
 
     ret = eth_bridge_cb(log)
@@ -407,6 +441,9 @@ def test_cb_eth_nusd_out(rpcs: Dict[str, Web3]) -> None:
         sent_token=HexBytes('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'),
         received_token=HexBytes('0xe9e7cea3dedca5984780bafc599bd69add087d56'),
         swap_success=None,
+        kappa=HexBytes(
+            '0x43a799ca7838f79dd23097090481db9bfc3e0421d85277a197b0af3d502b3a76'
+        ),
     )
 
     ret = eth_bridge_cb(log)
@@ -431,7 +468,9 @@ def test_cb_eth_nusd_in(rpcs: Dict[str, Web3]) -> None:
         received_time=1640341773,
         received_token=HexBytes('0x6b175474e89094c44da98b954eedeac495271d0f'),
         swap_success=True,
-        fee=200000000000000000000,
+        kappa=HexBytes(
+            '0x2caf7c0ca2c3babbca48d7d2bda7913d68ba84b81a6312e06d38f6897131b49e'
+        ),
     )
 
     ret = eth_bridge_cb(log)

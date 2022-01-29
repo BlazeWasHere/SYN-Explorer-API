@@ -11,6 +11,7 @@ from typing import Dict, List, Literal, TypedDict, DefaultDict, cast
 from collections import defaultdict
 from enum import Enum
 import json
+import sys
 import os
 
 from web3.middleware.filter import local_filter_middleware
@@ -143,18 +144,20 @@ else:
     REDIS_PORT = int(os.environ['REDIS_PORT'])
     PSQL_URL = os.environ['PSQL_URL']
 
-#PSQL = psycopg_pool.ConnectionPool(PSQL_URL, min_size=2, autocommit=True)
-if os.getenv('NOLOAD_PSQL') is None:
+TESTING = "pytest" in sys.modules or os.getenv('TESTING')
+if TESTING:
+    print('Running with TESTING mode enabled.')
+
+    # Hack to make the linter happy - though calling a literal should fail
+    # runtime which should be expected.
+    PSQL = cast(psycopg_pool.ConnectionPool, 'foo')
+else:
     PSQL = psycopg_pool.ConnectionPool(PSQL_URL)
 
     _sql_path = os.path.join(os.getcwd(), 'sql')
     with open(os.path.join(_sql_path, 'transactions.sql')) as f:
         with PSQL.connection() as conn:
             conn.execute(f.read())
-else:
-    # Hack to make the linter happy - though calling a literal should fail
-    # runtime which should be expected.
-    PSQL = cast(psycopg_pool.ConnectionPool, 'foo')
 
 # We use this for processes to interact w/ eachother.
 MESSAGE_QUEUE_REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
@@ -357,7 +360,8 @@ TOKENS = {
         '0x19e1ae0ee35c0404f835521146206595d37981ae',  # nETH
         '0x321e7092a180bb43555132ec53aaa65a5bf84251',  # gOHM
         '0xcc5672600b948df4b665d9979357bef3af56b300',  # synFRAX
-        '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',  # avWETH 
+        '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',  # avWETH
+        '0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB',  # WETH.e
     ],
     'arbitrum': [
         '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',  # DAI

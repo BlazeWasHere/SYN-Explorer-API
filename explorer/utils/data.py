@@ -362,6 +362,8 @@ TOKENS = {
         '0xcc5672600b948df4b665d9979357bef3af56b300',  # synFRAX
         '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',  # avWETH
         '0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB',  # WETH.e
+        '0x62edc0692bd897d2295872a9ffcac5425011c661',  # GMX
+        '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',  # WAVAX
     ],
     'arbitrum': [
         '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',  # DAI
@@ -375,6 +377,7 @@ TOKENS = {
         '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',  # WETH
         '0x8d9ba570d6cb60c7e3e0f31343efe75ab8e65fb1',  # gOHM
         '0x85662fd123280827e11c59973ac9fcbe838dc3b4',  # synFRAX
+        '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',  # GMX
     ],
     'fantom': [
         '0x04068da6c83afcfa0e13ba15a6696662335d5b75',  # USDC
@@ -386,6 +389,8 @@ TOKENS = {
         '0x78de9326792ce1d6eca0c978753c6953cdeedd73',  # JUMP
         '0x91fa20244fb509e8289ca630e5db3e9166233fdc',  # gOHM
         '0x1852f70512298d56e9c8fdd905e02581e04ddb2a',  # synFRAX
+        '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # nETH
+        '0x74b23882a30290451a17c44f4f05243b6b58c76d',  # WETH
     ],
     'harmony': [
         '0xe55e19fb4f2d85af758950957714292dac1e25b2',  # SYN
@@ -415,6 +420,8 @@ TOKENS = {
         '0xe96ac70907fff3efee79f502c985a7a21bce407d',  # synFRAX
         '0x1a93b23281cc1cde4c4741353f3064709a16197d',  # FRAX
         '0x3bf21ce864e58731b6f28d68d5928bcbeb0ad172',  # gOHM
+        '0x76906411d07815491a5e577022757ad941fb5066',  # veSOLAR
+        '0x98878b06940ae243284ca214f92bb71a2b032b8a',  # WMOVR
     ],
     'optimism': [
         '0x809dc529f07651bd43a172e8db6f4a7a0d771036',  # nETH
@@ -427,6 +434,16 @@ TOKENS = {
         '0x4988a896b1227218e4a686fde5eabdcabd91571f',  # USDT
         '0x07379565cd8b0cae7c60dc78e7f601b34af2a21c',  # nUSD
     ],
+    'moonbeam': [
+        '0x3192ae73315c3634ffa217f71cf6cbc30fee349a',  # WETH
+        '0xbf180c122d85831dcb55dc673ab47c8ab9bcefb4',  # nETH
+        '0xf44938b0125a6662f9536281ad2cd6c499f22004',  # SYN
+        '0x0db6729c03c85b0708166ca92801bcb5cac781fc',  # veSOLAR
+        '0xd2666441443daa61492ffe0f37717578714a4521',  # gOHM
+        '0xdd47a348ab60c61ad6b60ca8c31ea5e00ebfab4f',  # synFRAX
+        '0x1d4c2a246311bb9f827f4c768e277ff5787b7d7e',  # MOVR
+        '0xa1f8890e39b4d8e33efe296d698fe42fb5e59cc3',  # AVAX
+    ]
 }
 
 

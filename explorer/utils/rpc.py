@@ -298,7 +298,7 @@ def bridge_callback(
                          sent_token_address, received_token, kappa))
                 except psycopg.errors.UniqueViolation:
                     # TODO: stderr? rollback?
-                    return
+                    pass
 
     elif direction == Direction.IN:
         received_value = None
@@ -382,11 +382,15 @@ def bridge_callback(
                                 f'`IN_SQL` with args {params}, affected {c.rowcount}'
                                 f' {tx_hash.hex()} {chain}')
                 except Exception as e:
-                    print(e)
-                    c.execute(LOST_IN_SQL,
-                              (tx_hash, data.to, received_value, from_chain,
-                               timestamp, received_token, swap_success,
-                               args['kappa']))
+
+                    try:
+                        c.execute(LOST_IN_SQL,
+                                  (tx_hash, data.to, received_value,
+                                   from_chain, timestamp, received_token,
+                                   swap_success, args['kappa']))
+                        print(e)
+                    except psycopg.errors.UniqueViolation:
+                        pass
 
     if save_block_index:
         LOGS_REDIS_URL.set(f'{chain}:logs:{address}:MAX_BLOCK_STORED',

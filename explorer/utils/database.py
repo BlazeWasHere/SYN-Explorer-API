@@ -75,7 +75,6 @@ class Transaction(Base):
     sent_time: int
     received_time: Optional[int]
     sent_token: HexBytes
-    received_token: Optional[HexBytes]
     swap_success: Optional[bool]
     kappa: HexBytes
 

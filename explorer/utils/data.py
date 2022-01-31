@@ -433,11 +433,13 @@ TOKENS = {
         '0x3bf21ce864e58731b6f28d68d5928bcbeb0ad172',  # gOHM
         '0x76906411d07815491a5e577022757ad941fb5066',  # veSOLAR
         '0x98878b06940ae243284ca214f92bb71a2b032b8a',  # WMOVR
+        '0x037527278b4ac8a4327e7015b788001c2954cf82',  # WETH
     ],
     'optimism': [
         '0x809dc529f07651bd43a172e8db6f4a7a0d771036',  # nETH
         '0x5a5fff6f753d7c11a56a52fe47a177a87e431655',  # SYN
         '0x121ab82b49b2bc4c7901ca46b8277962b4350204',  # WETH
+        '0x4200000000000000000000000000000000000006',  # WETH
     ],
     'aurora': [
         '0xd80d8688b02b3fd3afb81cdb124f188bb5ad0445',  # SYN

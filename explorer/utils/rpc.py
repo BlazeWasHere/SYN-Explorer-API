@@ -17,12 +17,12 @@ from web3 import Web3
 import psycopg
 import gevent
 
-from explorer.utils.data import BRIDGE_ABI, CHAINS, PSQL, SYN_DATA, \
-    LOGS_REDIS_URL, TOKENS_IN_POOL, TOKENS_INFO, TOPICS, TOPIC_TO_EVENT, \
-    Direction, CHAINS_REVERSED
-from explorer.utils.helpers import convert, find_same_token_across_chain, \
-    retry, search_logs, token_address_to_pool, iterate_receipt_logs
+from explorer.utils.data import BRIDGE_ABI, PSQL, SYN_DATA, LOGS_REDIS_URL, \
+    TOKENS_INFO, TOPICS, TOPIC_TO_EVENT, Direction, CHAINS_REVERSED
+from explorer.utils.helpers import convert, retry, search_logs, \
+    iterate_receipt_logs
 from explorer.utils.database import Transaction, LostTransaction
+from explorer.utils.contract import get_pool_data
 
 # Start blocks of the 4pool >=Nov-7th-2021.
 _start_blocks = {
@@ -54,11 +54,10 @@ INSERT into
         to_chain_id,
         sent_time,
         sent_token,
-        received_token,
         kappa
     )
 VALUES
-    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+    (%s, %s, %s, %s, %s, %s, %s, %s, %s);
 """
 
 IN_SQL = """
@@ -232,7 +231,6 @@ def bridge_callback(
             return sent_token_address, sent_value
 
         sent_token_address = sent_value = None
-        to_chain = CHAINS[args['chainId']]
 
         for _log in receipt['logs']:
             ret = get_sent_info(_log)
@@ -250,33 +248,12 @@ def bridge_callback(
 
         if event in ['TokenDepositAndSwap', 'TokenRedeemAndSwap']:
             data = Events.TokenDepositAndSwap(args)
-
-            # args['token'] = the nexus asset.
-            pool = token_address_to_pool(chain, args['token'])
-            received_token = TOKENS_IN_POOL[to_chain][pool][data.token_idx_to]
-            received_token = HexBytes(received_token)
         elif event == 'TokenDeposit':
             data = Events.TokenDeposit(args)
-
-            received_token = find_same_token_across_chain(
-                chain,
-                to_chain,
-                data.sent_token,
-            )
         elif event == 'TokenRedeemAndRemove':
             data = Events.TokenRedeemAndRemove(args)
-
-            pool = token_address_to_pool(chain, args['token'])
-            received_token = TOKENS_IN_POOL[to_chain][pool][data.token_idx_to]
-            received_token = HexBytes(received_token)
         elif event == 'TokenRedeem':
             data = Events.TokenRedeem(args)
-
-            received_token = find_same_token_across_chain(
-                chain,
-                to_chain,
-                data.token,
-            )
         else:
             raise RuntimeError(
                 f'did not converge OUT event: {event} {tx_hash.hex()} {chain}'
@@ -286,16 +263,15 @@ def bridge_callback(
             return Transaction(tx_hash, None, HexBytes(tx_info['from']),
                                data.to, sent_value, None, True, from_chain,
                                data.chain_id, timestamp, None,
-                               sent_token_address, received_token, None, kappa)
+                               sent_token_address, None, kappa)
 
         with PSQL.connection() as conn:
             with conn.cursor() as c:
                 try:
-                    c.execute(
-                        OUT_SQL,
-                        (tx_hash, HexBytes(tx_info['from']), data.to,
-                         sent_value, from_chain, data.chain_id, timestamp,
-                         sent_token_address, received_token, kappa))
+                    c.execute(OUT_SQL,
+                              (tx_hash, HexBytes(tx_info['from']), data.to,
+                               sent_value, from_chain, data.chain_id,
+                               timestamp, sent_token_address, kappa))
                 except psycopg.errors.UniqueViolation:
                     # TODO: stderr? rollback?
                     pass
@@ -304,6 +280,10 @@ def bridge_callback(
         received_value = None
 
         if event in ['TokenWithdrawAndRemove', 'TokenMintAndSwap']:
+            assert 'input' in tx_info  # IT EXISTS MYPY!
+            _, inp_args = contract.decode_function_input(tx_info['input'])
+            pool = get_pool_data(chain, inp_args['pool'])
+
             if event == 'TokenWithdrawAndRemove':
                 data = Events.TokenWithdrawAndRemove(args)
             elif event == 'TokenMintAndSwap':
@@ -311,9 +291,6 @@ def bridge_callback(
             else:
                 # Will NEVER reach here - comprendo mypy???
                 raise
-
-            pool = token_address_to_pool(chain, data.token)
-            pool = TOKENS_IN_POOL[chain][pool]
 
             if data.swap_success:
                 received_token = pool[data.token_idx_to]
@@ -382,7 +359,6 @@ def bridge_callback(
                                 f'`IN_SQL` with args {params}, affected {c.rowcount}'
                                 f' {tx_hash.hex()} {chain}')
                 except Exception as e:
-
                     try:
                         c.execute(LOST_IN_SQL,
                                   (tx_hash, data.to, received_value,

@@ -7,12 +7,15 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import Optional, List, Any, Union, Literal
+from typing import Dict, Optional, List, Any, Union, Literal
+from collections import defaultdict
 from dataclasses import dataclass
 from hexbytes import HexBytes
 
 import web3.exceptions
 from web3 import Web3
+
+_pool_cache: Dict[str, Dict[str, List[str]]] = defaultdict(dict)
 
 
 @dataclass
@@ -88,3 +91,26 @@ def bridge_token_to_id(chain_id: int, token: HexBytes) -> str:
     from explorer.utils.data import BRIDGE_CONFIG
 
     return BRIDGE_CONFIG.functions.getTokenID(token, chain_id).call()
+
+
+def get_pool_data(chain: str, address: str):
+    if address in _pool_cache[chain]:
+        return _pool_cache[chain][address]
+
+    from explorer.utils.data import MAX_UINT8, SYN_DATA, BASEPOOL_ABI
+
+    w3: Web3 = SYN_DATA[chain]['w3']
+    contract = w3.eth.contract(w3.toChecksumAddress(address), abi=BASEPOOL_ABI)
+    res: List[str] = []
+
+    for i in range(MAX_UINT8):
+        try:
+            # TODO: block indentifier?
+            res.append(contract.functions.getToken(i).call())
+        except (web3.exceptions.ContractLogicError,
+                web3.exceptions.BadFunctionCallOutput):
+            # Out of range.
+            break
+
+    _pool_cache[chain][address] = res
+    return res

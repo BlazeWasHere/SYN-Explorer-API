@@ -43,6 +43,8 @@ with open(os.path.join(_abis_path, 'olderBridge.json')) as f:
     OLDERBRIDGE_ABI = json.load(f)['abi']
 with open(os.path.join(_abis_path, 'pool.json')) as f:
     POOL_ABI = json.load(f)['abi']
+with open(os.path.join(_abis_path, 'bridgeConfig.json')) as f:
+    BRIDGE_CONFIG_ABI = json.load(f)['abi']
 
 SYN_DATA = {
     "ethereum": {
@@ -563,6 +565,8 @@ POOLS: Dict[str, Dict[Literal['nusd', 'neth'], str]] = {
     },
 }
 
-from pprint import pprint
-
-pprint(TOKENS_IN_POOL)
+# V2
+BRIDGE_CONFIG = cast(Web3, SYN_DATA['ethereum']['w3']).eth.contract(
+    Web3.toChecksumAddress('0xAE908bb4905bcA9BdE0656CC869d0F23e77875E7'),
+    abi=BRIDGE_CONFIG_ABI,
+)

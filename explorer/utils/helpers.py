@@ -20,7 +20,8 @@ from hexbytes import HexBytes
 from gevent import Greenlet
 import gevent
 
-from .data import SYN_DATA, POOLS, TOKENS_INFO
+from .contract import get_bridge_token_info, bridge_token_to_id
+from .data import SYN_DATA, POOLS, TOKENS_INFO, CHAINS_REVERSED
 
 logger = logging.Logger(__name__)
 D = decimal.Decimal
@@ -197,27 +198,12 @@ def token_address_to_pool(chain: str, address: str) -> Literal['neth', 'nusd']:
 
 
 def find_same_token_across_chain(chain: str, to_chain: str,
-                                 token: str) -> HexBytes:
-    token = token.lower()
-    from_token = TOKENS_INFO[chain][token]
+                                 token: HexBytes) -> HexBytes:
+    from_chain_id = CHAINS_REVERSED[chain]
+    to_chain_id = CHAINS_REVERSED[to_chain]
 
-    if from_token['symbol'] == 'synFRAX' and to_chain == 'ethereum':
-        # FRAX
-        return HexBytes('0x853d955acef822db058eb8505911ed77f175b99e')
-
-    if 'ETH' in from_token['name']:
-        if to_chain == 'avalanche':
-            # WETH.e
-            return HexBytes('0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab')
-
-        for _token, v in TOKENS_INFO[to_chain].items():
-            if (v['decimals'] == from_token['decimals']
-                    and v['symbol'] in ['WETH', 'nETH']):
-                return HexBytes(_token)
-
-    for _token, v in TOKENS_INFO[to_chain].items():
-        if (v['decimals'] == from_token['decimals']
-                and v['symbol'] == from_token['symbol']):
-            return HexBytes(_token)
+    symbol = bridge_token_to_id(from_chain_id, token)
+    if (data := get_bridge_token_info(to_chain_id, symbol)):
+        return data.address
 
     raise RuntimeError(f'{token} on {chain} to {to_chain} did not converge')

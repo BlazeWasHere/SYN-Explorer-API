@@ -81,7 +81,7 @@ def get_bridge_token_info(chain_id: int,
                0, False, False):
         return False
 
-    return ret
+    return TokenInfo(*ret)
 
 
 def bridge_token_to_id(chain_id: int, token: HexBytes) -> str:

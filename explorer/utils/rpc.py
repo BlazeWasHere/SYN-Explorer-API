@@ -14,6 +14,7 @@ import time
 from web3.types import FilterParams, LogReceipt
 from hexbytes import HexBytes
 from web3 import Web3
+import psycopg
 import gevent
 
 from explorer.utils.data import BRIDGE_ABI, CHAINS, PSQL, SYN_DATA, \
@@ -289,10 +290,16 @@ def bridge_callback(
 
         with PSQL.connection() as conn:
             with conn.cursor() as c:
-                c.execute(OUT_SQL,
-                          (tx_hash, HexBytes(tx_info['from']), data.to,
-                           sent_value, from_chain, data.chain_id, timestamp,
-                           sent_token_address, received_token, kappa))
+                try:
+                    c.execute(
+                        OUT_SQL,
+                        (tx_hash, HexBytes(tx_info['from']), data.to,
+                         sent_value, from_chain, data.chain_id, timestamp,
+                         sent_token_address, received_token, kappa))
+                except psycopg.errors.UniqueViolation:
+                    # TODO: stderr? rollback?
+                    return
+
     elif direction == Direction.IN:
         received_value = None
 
@@ -441,6 +448,16 @@ def get_logs(
         }
 
         logs: List[LogReceipt] = w3.eth.get_logs(params)
+        # Apparently, some RPC nodes don't bother
+        # sorting events in a chronological order.
+        # Let's sort them by block (from oldest to newest)
+        # And by transaction index (within the same block,
+        # also in ascending order)
+        logs = sorted(
+            logs,
+            key=lambda k: (k['blockNumber'], k['transactionIndex']),
+        )
+
         for log in logs:
             # Skip transactions from the very first block
             # that are already in the DB

@@ -78,11 +78,13 @@ SYN_DATA = {
         "rpc": os.getenv('FTM_RPC'),
         "bridge": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
         "nusdpool": "0x2913e812cf0dcca30fb28e6cac3d2dcff4497688",
+        "nethpool": "0x8d9ba570d6cb60c7e3e0f31343efe75ab8e65fb1",
     },
     "harmony": {
         "rpc": os.getenv('HARMONY_RPC'),
         "bridge": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
         "nusdpool": "0x3ea9b0ab55f34fb188824ee288ceaefc63cf908e",
+        "nethpool": "0x2913e812cf0dcca30fb28e6cac3d2dcff4497688",
     },
     "boba": {
         "rpc": os.getenv('BOBA_RPC'),

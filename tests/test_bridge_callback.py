@@ -493,3 +493,27 @@ def test_cb_arb_usdc_in_3pool(rpcs: Dict[str, Web3]) -> None:
 
     ret = arb_bridge_cb(log)
     assert ret == expected
+
+
+def test_cb_ftm_usdc_in_3pool(rpcs: Dict[str, Web3]) -> None:
+    log = ftm_get_log(
+        rpcs['fantom'],
+        '0x00012de400000bd539f3e0e67da4103dea44167b3728e36fc616458104715754')
+
+    expected = LostTransaction(
+        to_tx_hash=HexBytes(
+            '0xbb2f9787585a1e949f19abe22e17c462edc240f3db9464bdcc1a12c4e7157f2b'
+        ),
+        to_address=HexBytes('0xb191ba274502357bbad683a3a4cc4bf1b63e0d65'),
+        received_value=48032688,
+        to_chain_id=250,
+        received_time=1643660740,
+        received_token=HexBytes('0x04068da6c83afcfa0e13ba15a6696662335d5b75'),
+        swap_success=True,
+        kappa=HexBytes(
+            '0x9eb58cf15d416ec03ce19d633024396fc82bacf2d0e099cc551bf3c4be06175e'
+        ),
+    )
+
+    ret = ftm_bridge_cb(log)
+    assert ret == expected

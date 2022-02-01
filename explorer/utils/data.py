@@ -425,6 +425,7 @@ TOKENS = {
         '0xf74195bb8a5cf652411867c5c2c5b8c2a402be35',  # DAI
         '0xd203de32170130082896b4111edf825a4774c18e',  # WETH
         '0xd22c0a4af486c7fa08e282e9eb5f30f9aaa62c95',  # gOHM
+        '0x037527278b4ac8a4327e7015b788001c2954cf82',  # WETH
     ],
     'moonriver': [
         '0xd80d8688b02b3fd3afb81cdb124f188bb5ad0445',  # SYN
@@ -433,7 +434,6 @@ TOKENS = {
         '0x3bf21ce864e58731b6f28d68d5928bcbeb0ad172',  # gOHM
         '0x76906411d07815491a5e577022757ad941fb5066',  # veSOLAR
         '0x98878b06940ae243284ca214f92bb71a2b032b8a',  # WMOVR
-        '0x037527278b4ac8a4327e7015b788001c2954cf82',  # WETH
     ],
     'optimism': [
         '0x809dc529f07651bd43a172e8db6f4a7a0d771036',  # nETH

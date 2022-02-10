@@ -74,6 +74,7 @@ class Transaction(Base):
     to_chain_id: int
     sent_time: int
     received_time: Optional[int]
+    received_token: Optional[HexBytes]
     sent_token: HexBytes
     swap_success: Optional[bool]
     kappa: HexBytes

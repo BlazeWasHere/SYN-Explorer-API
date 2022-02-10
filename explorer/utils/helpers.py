@@ -88,6 +88,10 @@ def address_to_pool(chain: str, address: str) -> Literal['nusd', 'neth']:
 
 def search_logs(chain: str, receipt: TxReceipt,
                 received_token: HexBytes) -> Dict[str, Any]:
+    if (chain in misrepresented_map
+            and received_token in misrepresented_map[chain][received_token]):
+        received_token = misrepresented_map[chain][received_token]
+
     contract = TOKENS_INFO[chain][received_token.hex()]['_contract'].events
 
     for log in receipt['logs']:

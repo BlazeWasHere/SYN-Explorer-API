@@ -149,14 +149,6 @@ def dispatch_get_logs(
                              address,
                              max_blocks=512,
                              key_namespace=key_namespace))
-        elif chain == 'polygon':
-            jobs.append(
-                gevent.spawn(get_logs,
-                             chain,
-                             cb,
-                             address,
-                             max_blocks=2048,
-                             key_namespace=key_namespace))
         else:
             jobs.append(
                 gevent.spawn(get_logs,

@@ -18,7 +18,8 @@ import psycopg
 import gevent
 
 from explorer.utils.data import BRIDGE_ABI, PSQL, SYN_DATA, LOGS_REDIS_URL, \
-    TOKENS_INFO, TOPICS, TOPIC_TO_EVENT, Direction, CHAINS_REVERSED
+    TOKENS_INFO, TOPICS, TOPIC_TO_EVENT, Direction, CHAINS_REVERSED, \
+    MISREPRESENTED_MAP
 from explorer.utils.helpers import convert, retry, search_logs, \
     iterate_receipt_logs
 from explorer.utils.database import Transaction, LostTransaction
@@ -262,7 +263,7 @@ def bridge_callback(
         if testing:
             return Transaction(tx_hash, None, HexBytes(tx_info['from']),
                                data.to, sent_value, None, True, from_chain,
-                               data.chain_id, timestamp, None,
+                               data.chain_id, timestamp, None, None,
                                sent_token_address, None, kappa)
 
         with PSQL.connection() as conn:
@@ -314,6 +315,10 @@ def bridge_callback(
             raise RuntimeError(
                 f'did not converge event IN: {event} {tx_hash.hex()} {chain} '
                 f'args: {args}')
+
+        if (chain in MISREPRESENTED_MAP
+                and received_token in MISREPRESENTED_MAP[chain]):
+            received_token = MISREPRESENTED_MAP[chain][received_token]
 
         if received_value is None:
             received_value = search_logs(chain, receipt,

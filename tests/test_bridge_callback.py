@@ -46,6 +46,7 @@ def test_polygon_usdc_out(rpcs: Dict[str, Web3]) -> None:
         to_chain_id=250,
         sent_time=1640682515,
         received_time=None,
+        received_token=None,
         sent_token=HexBytes('0x2791bca1f2de4661ed88a30c99a7a9449aa84174'),
         swap_success=None,
         kappa=HexBytes(
@@ -252,6 +253,7 @@ def test_avalanche_weth_out(rpcs: Dict[str, Web3]) -> None:
         to_chain_id=1,
         sent_time=1640448305,
         received_time=None,
+        received_token=None,
         sent_token=HexBytes('0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab'),
         swap_success=None,
         kappa=HexBytes(
@@ -283,6 +285,7 @@ def test_polygon_nusd_out(rpcs: Dict[str, Web3]) -> None:
         to_chain_id=1,
         sent_time=1640432933,
         received_time=None,
+        received_token=None,
         sent_token=HexBytes('0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'),
         swap_success=None,
         kappa=HexBytes(
@@ -314,6 +317,7 @@ def test_bsc_nusd_out(rpcs: Dict[str, Web3]) -> None:
         to_chain_id=137,
         sent_time=1640365015,
         received_time=None,
+        received_token=None,
         sent_token=HexBytes('0x55d398326f99059ff775485246999027b3197955'),
         swap_success=None,
         kappa=HexBytes(
@@ -370,6 +374,7 @@ def test_cb_eth_weth_out(rpcs: Dict[str, Web3]) -> None:
         to_chain_id=42161,
         sent_time=1640365552,
         received_time=None,
+        received_token=None,
         sent_token=HexBytes('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
         swap_success=None,
         kappa=HexBytes(
@@ -401,6 +406,7 @@ def test_cb_eth_gohm_out(rpcs: Dict[str, Web3]) -> None:
         to_chain_id=137,
         sent_time=1640360264,
         received_time=None,
+        received_token=None,
         sent_token=HexBytes('0x0ab87046fbb341d058f17cbc4c1133f25a20a52f'),
         swap_success=None,
         kappa=HexBytes(
@@ -432,6 +438,7 @@ def test_cb_eth_nusd_out(rpcs: Dict[str, Web3]) -> None:
         to_chain_id=56,
         sent_time=1630526543,
         received_time=None,
+        received_token=None,
         sent_token=HexBytes('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'),
         swap_success=None,
         kappa=HexBytes(
@@ -516,4 +523,29 @@ def test_cb_ftm_usdc_in_3pool(rpcs: Dict[str, Web3]) -> None:
     )
 
     ret = ftm_bridge_cb(log)
+    assert ret == expected
+
+
+def test_cb_avalanche_gmx_in(rpcs: Dict[str, Web3]) -> None:
+    log = avalanche_get_log(
+        rpcs['avalanche'],
+        '0x38d5b3b9ccf63c6de79ebbad63253f8e9e87a0ccfbbf8e8a2edf506ba4b572f5',
+    )
+
+    expected = LostTransaction(
+        to_tx_hash=HexBytes(
+            '0x5d4541cc14d1a7f7e22b1ba544aadaa3c07bfd3fe225b47530c0962c7f0b5e0a'
+        ),
+        to_address=HexBytes('0x300e780479437092cd0a40a6f3b7eae5dcd33226'),
+        received_value=200030000000000000000,
+        to_chain_id=43114,
+        received_time=1644274055,
+        received_token=HexBytes('0x62edc0692bd897d2295872a9ffcac5425011c661'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0x7782b444e289e959d25880fac4472fad55eab4f5b4192f63063b81ae38fc8715'
+        ),
+    )
+
+    ret = avalanche_bridge_cb(log)
     assert ret == expected

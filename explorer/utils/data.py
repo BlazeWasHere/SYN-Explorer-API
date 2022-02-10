@@ -19,6 +19,7 @@ from web3.middleware.geth_poa import geth_poa_middleware
 from dotenv import load_dotenv, find_dotenv
 from gevent.greenlet import Greenlet
 from web3.contract import Contract
+from hexbytes import HexBytes
 from gevent.pool import Pool
 from web3 import Web3
 import psycopg_pool
@@ -459,6 +460,13 @@ TOKENS = {
         '0xa1f8890e39b4d8e33efe296d698fe42fb5e59cc3',  # AVAX
     ]
 }
+
+MISREPRESENTED_MAP: Dict[str, Dict[HexBytes, HexBytes]] = defaultdict(dict)
+
+# GMX WRAPPER -> GMX
+MISREPRESENTED_MAP['avalanche'] \
+    [HexBytes('0x20A9DC684B4d0407EF8C9A302BEAaA18ee15F656')] \
+    = HexBytes('0x62edc0692BD897D2295872a9FFCac5425011c661')
 
 
 class TokenInfo(TypedDict):

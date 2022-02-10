@@ -88,10 +88,6 @@ def address_to_pool(chain: str, address: str) -> Literal['nusd', 'neth']:
 
 def search_logs(chain: str, receipt: TxReceipt,
                 received_token: HexBytes) -> Dict[str, Any]:
-    if (chain in misrepresented_map
-            and received_token in misrepresented_map[chain][received_token]):
-        received_token = misrepresented_map[chain][received_token]
-
     contract = TOKENS_INFO[chain][received_token.hex()]['_contract'].events
 
     for log in receipt['logs']:
@@ -201,15 +197,6 @@ def token_address_to_pool(chain: str, address: str) -> Literal['neth', 'nusd']:
     raise RuntimeError(f'{address} on {chain} did not converge')
 
 
-misrepresented_map = {
-    'avalanche': {
-        # GMX WRAPPER -> GMX
-        HexBytes('0x20A9DC684B4d0407EF8C9A302BEAaA18ee15F656'):
-        HexBytes('0x62edc0692BD897D2295872a9FFCac5425011c661'),
-    }
-}
-
-
 def find_same_token_across_chain(chain: str, to_chain: str,
                                  token: HexBytes) -> HexBytes:
     from_chain_id = CHAINS_REVERSED[chain]
@@ -217,10 +204,6 @@ def find_same_token_across_chain(chain: str, to_chain: str,
 
     symbol = bridge_token_to_id(from_chain_id, token)
     if (data := get_bridge_token_info(to_chain_id, symbol)):
-        if (chain in misrepresented_map
-                and data.address in misrepresented_map[chain][data.address]):
-            return misrepresented_map[chain][data.address]
-
         return data.address
 
     raise RuntimeError(f'{token} on {chain} to {to_chain} did not converge')

@@ -26,7 +26,7 @@
       "Address": {
         "type": "string",
         "pattern": "/^0x([A-Fa-f0-9]{40})$/",
-        "example": "0x985458e523db3d53125813ed68c274899e9dfab4"
+        "example": "0xf1ab326e9aa8792272471bc47069b9670d7292bb"
       },
       "Transaction": {
         "type": "object",

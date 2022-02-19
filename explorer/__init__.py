@@ -56,16 +56,19 @@ class HexConverter(BaseConverter):
 
 
 class CustomJSONEncoder(json.JSONEncoder):
+    def _transform(self, v):
+        if isinstance(v, HexBytes):
+            return v.hex()
+        elif isinstance(v, int):
+            # Over max `Number.MAX_SAFE_INTEGER` for JS.
+            if v > (2**53 - 1):
+                return str(v)
+
+        return v
+
     def default(self, o):
         if isinstance(o, Transaction):
-            return {
-                k: v.hex() if isinstance(v, HexBytes) else v
-                for k, v in o.__dict__.items()
-            }
-        elif isinstance(o, int):
-            # Over max `Number.MAX_SAFE_INTEGER` for JS.
-            if o > (2**53 - 1):
-                return str(o)
+            return {k: self._transform(v) for k, v in o.__dict__.items()}
 
         super().default(o)
 

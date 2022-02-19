@@ -62,6 +62,10 @@ class CustomJSONEncoder(json.JSONEncoder):
                 k: v.hex() if isinstance(v, HexBytes) else v
                 for k, v in o.__dict__.items()
             }
+        elif isinstance(o, int):
+            # Over max `Number.MAX_SAFE_INTEGER` for JS.
+            if o > (2**53 - 1):
+                return str(o)
 
         super().default(o)
 

@@ -109,10 +109,16 @@ SYN_DATA = {
     },
     "moonbeam": {
         "rpc": os.getenv('MOONBEAM_RPC'),
-        "address": "0xf44938b0125a6662f9536281ad2cd6c499f22004",
         'bridge': '0x84a420459cd31c3c34583f67e0f0fb191067d32f',
-        "minichef": "0xd5609cd0e1675331e4fb1d43207c8d9d83aab17c",
-    }
+    },
+    "cronos": {
+        "rpc": os.getenv('CRONOS_RPC'),
+        "bridge": "0xe27bff97ce92c3e1ff7aa9f86781fdd6d48f5ee9",
+    },
+    "metis": {
+        "rpc": os.getenv('METIS_RPC'),
+        "bridge": "0x06fea8513ff03a0d3f61324da709d4cf06f42a5c",
+    },
 }
 
 # Init 'func' to append `contract` to SYN_DATA so we can call the ABI simpler later.
@@ -190,6 +196,8 @@ CHAINS = {
     10: 'optimism',
     1313161554: 'aurora',
     1284: 'moonbeam',
+    25: 'cronos',
+    1088: 'metis',
 }
 
 CHAINS_REVERSED = {v: k for k, v in CHAINS.items()}
@@ -332,6 +340,7 @@ TOKENS = {
         '0x853d955acef822db058eb8505911ed77f175b99e',  # FRAX
         '0xca76543cf381ebbb277be79574059e32108e3e65',  # wsOHM
         '0x0ab87046fbb341d058f17cbc4c1133f25a20a52f',  # gOHM
+        '0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb',  # UST
     ],
     'bsc': [
         '0x23b891e5c62e0955ae2bd185990103928ab817b3',  # nUSD
@@ -347,6 +356,7 @@ TOKENS = {
         '0x0fe9778c005a5a6115cbe12b0568a2d50b765a51',  # NFD
         '0xc13b7a43223bb9bf4b69bd68ab20ca1b79d81c75',  # JGN
         '0x88918495892baf4536611e38e75d771dc6ec0863',  # gOHM
+        '0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c',  # UST
     ],
     'polygon': [
         '0xf8f9efc0db77d8881500bb06ff5d6abc3070e695',  # SYN
@@ -360,6 +370,7 @@ TOKENS = {
         '0xeee3371b89fc43ea970e908536fcddd975135d8a',  # DOG
         '0x48a34796653afdaa1647986b33544c911578e767',  # synFRAX
         '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',  # WETH
+        '0x565098CBa693b3325f9fe01D41b7A1cd792Abab1',  # UST
     ],
     'avalanche': [
         '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',  # DAI
@@ -376,6 +387,7 @@ TOKENS = {
         '0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB',  # WETH.e
         '0x62edc0692bd897d2295872a9ffcac5425011c661',  # GMX
         '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',  # WAVAX
+        '0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43',  # UST
     ],
     'arbitrum': [
         '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',  # DAI
@@ -390,6 +402,7 @@ TOKENS = {
         '0x8d9ba570d6cb60c7e3e0f31343efe75ab8e65fb1',  # gOHM
         '0x85662fd123280827e11c59973ac9fcbe838dc3b4',  # synFRAX
         '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',  # GMX
+        '0x13780E6d5696DD91454F6d3BbC2616687fEa43d0',  # UST
     ],
     'fantom': [
         '0x04068da6c83afcfa0e13ba15a6696662335d5b75',  # USDC
@@ -403,6 +416,7 @@ TOKENS = {
         '0x1852f70512298d56e9c8fdd905e02581e04ddb2a',  # synFRAX
         '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # nETH
         '0x74b23882a30290451a17c44f4f05243b6b58c76d',  # WETH
+        '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',  # UST
     ],
     'harmony': [
         '0xe55e19fb4f2d85af758950957714292dac1e25b2',  # SYN
@@ -416,6 +430,7 @@ TOKENS = {
         '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # gOHM
         '0x0b5740c6b4a97f90ef2f0220651cca420b868ffb',  # nETH
         '0x6983d1e6def3690c4d616b13597a09e6193ea013',  # 1ETH
+        '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',  # UST
     ],
     'boba': [
         '0x66a2a913e447d6b4bf33efbec43aaef87890fbbc',  # USDC
@@ -428,6 +443,7 @@ TOKENS = {
         '0xd203de32170130082896b4111edf825a4774c18e',  # WETH
         '0xd22c0a4af486c7fa08e282e9eb5f30f9aaa62c95',  # gOHM
         '0x037527278b4ac8a4327e7015b788001c2954cf82',  # WETH
+        '0x61A269a9506272D128d79ABfE8E8276570967f00',  # UST
     ],
     'moonriver': [
         '0xd80d8688b02b3fd3afb81cdb124f188bb5ad0445',  # SYN
@@ -436,18 +452,21 @@ TOKENS = {
         '0x3bf21ce864e58731b6f28d68d5928bcbeb0ad172',  # gOHM
         '0x76906411d07815491a5e577022757ad941fb5066',  # veSOLAR
         '0x98878b06940ae243284ca214f92bb71a2b032b8a',  # WMOVR
+        '0xa9D0C0E124F53f4bE1439EBc35A9C73c0e8275fB',  # UST
     ],
     'optimism': [
         '0x809dc529f07651bd43a172e8db6f4a7a0d771036',  # nETH
         '0x5a5fff6f753d7c11a56a52fe47a177a87e431655',  # SYN
         '0x121ab82b49b2bc4c7901ca46b8277962b4350204',  # WETH
         '0x4200000000000000000000000000000000000006',  # WETH
+        '0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80',  # UST
     ],
     'aurora': [
         '0xd80d8688b02b3fd3afb81cdb124f188bb5ad0445',  # SYN
         '0xb12bfca5a55806aaf64e99521918a4bf0fc40802',  # USDC
         '0x4988a896b1227218e4a686fde5eabdcabd91571f',  # USDT
         '0x07379565cd8b0cae7c60dc78e7f601b34af2a21c',  # nUSD
+        '0xb1Da21B0531257a7E5aEfa0cd3CbF23AfC674cE1',  # UST
     ],
     'moonbeam': [
         '0x3192ae73315c3634ffa217f71cf6cbc30fee349a',  # WETH
@@ -458,7 +477,18 @@ TOKENS = {
         '0xdd47a348ab60c61ad6b60ca8c31ea5e00ebfab4f',  # synFRAX
         '0x1d4c2a246311bb9f827f4c768e277ff5787b7d7e',  # MOVR
         '0xa1f8890e39b4d8e33efe296d698fe42fb5e59cc3',  # AVAX
-    ]
+        '0x5CF84397944B9554A278870B510e86667681ff8D',  # UST
+    ],
+    'cronos': [
+        '0x7Bb5c7e3bF0B2a28fA26359667110bB974fF9359',  # UST
+        '0xfd0f80899983b8d46152aa1717d76cba71a31616',  # SYN
+        '0xbb0a63a6ca2071c6c4bcac11a1a317b20e3e999c',  # gOHM
+    ],
+    'metis': [
+        '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',  # UST
+        '0xfb21b70922b9f6e3c6274bcd6cb1aa8a0fe20b80',  # gOHM
+        '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # SYN
+    ],
 }
 
 MISREPRESENTED_MAP: Dict[str, Dict[HexBytes, HexBytes]] = defaultdict(dict)

@@ -18,7 +18,8 @@ from tests.helper import (eth_get_log, avalanche_bridge_cb, polygon_bridge_cb,
                           avalanche_bridge_cb, polygon_get_log, bsc_get_log,
                           arb_get_log, avalanche_get_log, ftm_get_log,
                           bsc_bridge_cb, ftm_bridge_cb, movr_get_log,
-                          movr_bridge_cb)
+                          movr_bridge_cb, metis_get_log, metis_bridge_cb,
+                          cro_bridge_cb, cro_get_log)
 from explorer.utils.database import Transaction, LostTransaction
 from explorer.utils.data import SYN_DATA
 
@@ -550,4 +551,143 @@ def test_cb_avalanche_gmx_in(rpcs: Dict[str, Web3]) -> None:
     )
 
     ret = avalanche_bridge_cb(log)
+    assert ret == expected
+
+
+def test_cb_metis_gohm_in(rpcs: Dict[str, Web3]) -> None:
+    log = metis_get_log(
+        rpcs['metis'],
+        '0x942e5d68f8e12f3b521e4500fc16ba5113c6d0458a837482c3ce171124b175f8',
+    )
+
+    expected = LostTransaction(
+        to_tx_hash=HexBytes(
+            '0xfcd8b7412ec85df65cde0cf5302d86b7b148ab4d78e18edb913e8da36a1985c1'
+        ),
+        to_address=HexBytes('0xbbb6d383471a558f4d8a61f2547cbc7f0a85ee67'),
+        received_value=2774752472716311,
+        to_chain_id=1088,
+        received_time=1646454133,
+        received_token=HexBytes('0xfb21b70922b9f6e3c6274bcd6cb1aa8a0fe20b80'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0x4ef5a74129d15b41b2a0ee0af4b08cbee4ef1637e2d748311ceb3b0599de0b8a'
+        ),
+    )
+
+    ret = metis_bridge_cb(log)
+    assert ret == expected
+
+
+def test_cb_bsc_ust_in(rpcs: Dict[str, Web3]) -> None:
+    log = bsc_get_log(
+        rpcs['bsc'],
+        '0x52e40362e16da09079983562ae166901ffa44d1b7e158f5f077853b04c1a662e',
+    )
+
+    expected = LostTransaction(
+        to_tx_hash=HexBytes(
+            '0x88bbe43c90a24c41b46fd6fdfecc06bf931776d2042e6560a77c5cd19ad78041'
+        ),
+        to_address=HexBytes('0x0af91fa049a7e1894f480bfe5bba20142c6c29a9'),
+        received_value=99990000,
+        to_chain_id=56,
+        received_time=1646080728,
+        received_token=HexBytes('0xb7a6c5f0cc98d24cf4b2011842e64316ff6d042c'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0xf17252d14455bf20391a5744f4b3e56120f51f955e990704381367177a225464'
+        ),
+    )
+
+    ret = bsc_bridge_cb(log)
+    assert ret == expected
+
+
+def test_cb_metis_gohm_out(rpcs: Dict[str, Web3]) -> None:
+    log = metis_get_log(
+        rpcs['metis'],
+        '0x8aeaa97a113ac7bdb28613a900feb461e1d4fba52f888ce7132db8af8a744d87',
+    )
+
+    expected = Transaction(
+        from_tx_hash=HexBytes(
+            '0xb843885351ddc394b7d22615a1864b8084c1da49bb5a2c5ee3ab4de267975c4c'
+        ),
+        to_tx_hash=None,
+        from_address=HexBytes('0xc16373b5fdb767c5c10b1ef1668649f94f925e03'),
+        to_address=HexBytes('0xc16373b5fdb767c5c10b1ef1668649f94f925e03'),
+        sent_value=596192978301868188,
+        received_value=None,
+        pending=True,
+        from_chain_id=1088,
+        to_chain_id=250,
+        sent_time=1646355060,
+        received_time=None,
+        received_token=None,
+        sent_token=HexBytes('0xfb21b70922b9f6e3c6274bcd6cb1aa8a0fe20b80'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0xc6824f3c79cff947b9e1094f03175cafcb95eb190023b39dad7479d19b5a688d'
+        ),
+    )
+
+    ret = metis_bridge_cb(log)
+    assert ret == expected
+
+
+def test_cb_cronos_syn_in(rpcs: Dict[str, Web3]) -> None:
+    log = cro_get_log(
+        rpcs['cronos'],
+        '0xc962e5b6729e912a8acd0b52f338440d89311e094d7c238fdbd32edfd66142e3',
+    )
+
+    expected = LostTransaction(
+        to_tx_hash=HexBytes(
+            '0x8ef866d8206eeecbe37679222fa0c0425c234d22c5c60cc8c90362ff41570fae'
+        ),
+        to_address=HexBytes('0x14303782c43a77c1078d26601d3954f4c116e7d6'),
+        received_value=4000000000000000000,
+        to_chain_id=25,
+        received_time=1646101086,
+        received_token=HexBytes('0xfd0f80899983b8d46152aa1717d76cba71a31616'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0xb802710281c68fd7ac3ce3c18eeda20e313de634bd1c54e726c6b218390fa21c'
+        ),
+    )
+
+    ret = cro_bridge_cb(log)
+    assert ret == expected
+
+
+def test_polygon_gohm_out(rpcs: Dict[str, Web3]) -> None:
+    log = polygon_get_log(
+        rpcs['polygon'],
+        '0xab3e4fca091f718f6f4c7cd5964a719782354ef898acb1351935e95861748eb4',
+    )
+
+    expected = Transaction(
+        from_tx_hash=HexBytes(
+            '0x59f9e225ea29652baa76b0a033e588f28ff201c66b74007f23b329e85a5208f9'
+        ),
+        to_tx_hash=None,
+        from_address=HexBytes('0x1a5bd83c7aa7cd71e154d1451c40bfd715cf9452'),
+        to_address=HexBytes('0x1a5bd83c7aa7cd71e154d1451c40bfd715cf9452'),
+        sent_value=197774835968982644,
+        received_value=None,
+        pending=True,
+        from_chain_id=137,
+        to_chain_id=25,
+        sent_time=1646504293,
+        received_time=None,
+        received_token=None,
+        sent_token=HexBytes('0xd8ca34fd379d9ca3c6ee3b3905678320f5b45195'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0x55da1350b05a234174842ddd2bf9bf7513c993cf0cacc3e24548195a7769714b'
+        ),
+    )
+
+    ret = polygon_bridge_cb(log)
     assert ret == expected

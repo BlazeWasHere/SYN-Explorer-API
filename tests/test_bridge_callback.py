@@ -13,10 +13,12 @@ from hexbytes import HexBytes
 from web3 import Web3
 import pytest
 
-from tests.helper import eth_get_log, avalanche_bridge_cb, polygon_bridge_cb, \
-    bsc_get_log, arb_bridge_cb, eth_bridge_cb, avalanche_bridge_cb, \
-    polygon_get_log, bsc_get_log, arb_get_log, avalanche_get_log, ftm_get_log, \
-    bsc_bridge_cb, ftm_bridge_cb, movr_get_log, movr_bridge_cb
+from tests.helper import (eth_get_log, avalanche_bridge_cb, polygon_bridge_cb,
+                          bsc_get_log, arb_bridge_cb, eth_bridge_cb,
+                          avalanche_bridge_cb, polygon_get_log, bsc_get_log,
+                          arb_get_log, avalanche_get_log, ftm_get_log,
+                          bsc_bridge_cb, ftm_bridge_cb, movr_get_log,
+                          movr_bridge_cb)
 from explorer.utils.database import Transaction, LostTransaction
 from explorer.utils.data import SYN_DATA
 
@@ -75,7 +77,7 @@ def test_polygon_gohm_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0xd8ca34fd379d9ca3c6ee3b3905678320f5b45195'),
         swap_success=None,
         kappa=HexBytes(
-            '0x0e0b80f7b70f97f35b1b5c46d341867e09a01fe9ac053e423e78a2daecb98d5d'
+            '0xa5c27c794a2d4111bc6afba8022bd6e41e9adf5b18a1b39899c1d5f1b14d7455'
         ),
     )
 
@@ -100,7 +102,7 @@ def test_eth_weth_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
         swap_success=None,
         kappa=HexBytes(
-            '0xedabb871ccd3d796d3e31bab9e543acb218b2d2e3790c8532bc60f85f7ea7e95'
+            '0x2fc8e3bf17e28e6d4cf98e75478e31670e7a7fdf03cef0cf1963cfaac5ff2284'
         ),
     )
 
@@ -125,7 +127,7 @@ def test_avalanche_gohm_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0x321e7092a180bb43555132ec53aaa65a5bf84251'),
         swap_success=None,
         kappa=HexBytes(
-            '0xa6b95c5a7c28a0321904a24246736e968512b09ae7b4e4f09b3f41dbbe686fca'
+            '0x20d23bbb2c7bdbee713e67ed720168d9f231e13ae04314204f6e8e7a79679304'
         ),
     )
 
@@ -150,7 +152,7 @@ def test_movr_synfrax_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0x1a93b23281cc1cde4c4741353f3064709a16197d'),
         swap_success=None,
         kappa=HexBytes(
-            '0xa2413fa5ca2f13ef5b483d8e603854b165186991aa17d0a5e3c38a6e3fabc514'
+            '0x20cc064a3d09ee517ead9bb31c589c5960ddff0671dc17e4e1e0aefb79565e63'
         ),
     )
 
@@ -175,7 +177,7 @@ def test_polygon_nusd_in_swap_fail(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0xb6c473756050de474286bed418b77aeac39b02af'),
         swap_success=False,
         kappa=HexBytes(
-            '0x13775d055f4cf6f5b149ea563e5675489ae84c41ee47afd88408f50675fc157b'
+            '0xa1ce627f0f1ef224597bec9d7541fc0434721e28b13909fa0c64bb68691dc83b'
         ),
     )
 
@@ -200,7 +202,7 @@ def test_ftm_nusd_in_swap_fail(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0xed2a7edd7413021d440b09d654f3b87712abab66'),
         swap_success=False,
         kappa=HexBytes(
-            '0x902899e03f46f70bf8ee0c60bc937e78b8659be749308f4a0ae12956cc9adc6d'
+            '0xaf80b4a99d0c3c219e8d31a4fd303d2a60c038424ca11c75ff115fe049d9952d'
         ),
     )
 
@@ -225,7 +227,7 @@ def test_eth_frax_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0x853d955acef822db058eb8505911ed77f175b99e'),
         swap_success=None,
         kappa=HexBytes(
-            '0xa13a112dda8f85273bf7d05c45e49ef380697f8218d5fc77a346bf2bfb954952'
+            '0xbb41321c8b0b578079f12cba69d2eaf00c5aae8edbf48e247e5112c4f3232704'
         ),
     )
 
@@ -346,7 +348,7 @@ def test_arb_nusd_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a'),
         swap_success=True,
         kappa=HexBytes(
-            '0xb3c7ec533fbaeff3a78eae5a36198c3b2a32e2eaa4d476e8a11708c1e483d6a9'
+            '0xf7a3b8f543bf8bd8beea11ac21c2bcf69dd5db92819b5f80df4c2990dfe5d46f'
         ),
     )
 
@@ -469,7 +471,7 @@ def test_cb_eth_nusd_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0x6b175474e89094c44da98b954eedeac495271d0f'),
         swap_success=True,
         kappa=HexBytes(
-            '0x2caf7c0ca2c3babbca48d7d2bda7913d68ba84b81a6312e06d38f6897131b49e'
+            '0x7e129c6b49f6536a123f8695800856dc5ea71a6eef53a596f2b1f6d53a14a496'
         ),
     )
 
@@ -494,7 +496,7 @@ def test_cb_arb_usdc_in_3pool(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'),
         swap_success=True,
         kappa=HexBytes(
-            '0x0fb1b5ec733b3877d30e67c37818ab62531b349fa3e68d359696b87a6cc999ad'
+            '0x7df7a988dea62da3b65b7fbb2aec9fa1fa9687bd8d7da5a4450ba30c4ae06004'
         ),
     )
 
@@ -518,7 +520,7 @@ def test_cb_ftm_usdc_in_3pool(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0x04068da6c83afcfa0e13ba15a6696662335d5b75'),
         swap_success=True,
         kappa=HexBytes(
-            '0x9eb58cf15d416ec03ce19d633024396fc82bacf2d0e099cc551bf3c4be06175e'
+            '0x1339777bb08f365d9868ad56342ddea308abe22a0cc6215742a680cbf8b8c458'
         ),
     )
 
@@ -543,7 +545,7 @@ def test_cb_avalanche_gmx_in(rpcs: Dict[str, Web3]) -> None:
         received_token=HexBytes('0x62edc0692bd897d2295872a9ffcac5425011c661'),
         swap_success=None,
         kappa=HexBytes(
-            '0x7782b444e289e959d25880fac4472fad55eab4f5b4192f63063b81ae38fc8715'
+            '0x735d7edfbf1fff43319a44aa007660bdbf45211e68e925f3d5bb9cbc054190cb'
         ),
     )
 

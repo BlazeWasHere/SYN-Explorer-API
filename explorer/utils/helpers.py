@@ -164,7 +164,7 @@ def dispatch_get_logs(
 
 
 def retry(func: Callable[..., T], *args, **kwargs) -> Optional[T]:
-    attempts: int = kwargs.pop('attempts', 3)
+    attempts: int = kwargs.pop('attempts', 5)
 
     for i in range(attempts):
         try:
@@ -172,7 +172,7 @@ def retry(func: Callable[..., T], *args, **kwargs) -> Optional[T]:
         except Exception:
             print(f'retry attempt {i}, args: {args}')
             traceback.print_exc()
-            gevent.sleep(5**i)
+            gevent.sleep(3**i)
 
     logging.critical(f'maximum retries ({attempts}) reached')
 

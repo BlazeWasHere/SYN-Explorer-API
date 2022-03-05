@@ -190,7 +190,6 @@ def bridge_callback(
     contract = w3.eth.contract(w3.toChecksumAddress(address), abi=abi)
     tx_hash = log['transactionHash']
 
-    kappa = w3.keccak(text=tx_hash.hex())
     timestamp = w3.eth.get_block(log['blockNumber'])
     timestamp = timestamp['timestamp']  # type: ignore
     tx_info = w3.eth.get_transaction(tx_hash)
@@ -212,6 +211,7 @@ def bridge_callback(
     args = contract.events[event]().processLog(log)['args']
 
     if direction == Direction.OUT:
+        kappa = w3.keccak(text=tx_hash.hex())
 
         def get_sent_info(_log: LogReceipt) -> Optional[Tuple[HexBytes, int]]:
             if _log['address'].lower() not in TOKENS_INFO[chain]:
@@ -279,6 +279,7 @@ def bridge_callback(
 
     elif direction == Direction.IN:
         received_value = None
+        kappa = args['kappa']
 
         if event in ['TokenWithdrawAndRemove', 'TokenMintAndSwap']:
             assert 'input' in tx_info  # IT EXISTS MYPY!

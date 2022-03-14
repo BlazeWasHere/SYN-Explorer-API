@@ -21,7 +21,9 @@ def search_recent_txs():
     limit = request.args.get('limit', 20, int)
 
     if limit > 250:
-        return jsonify({'error': 'limit must be less than 250'}, 400)
+        return jsonify({'error': 'limit must be less than 250'}), 400
+    elif limit < 0:
+        return jsonify({'error': 'limit must be positive'}), 400
 
     ret = Transaction.fetch_recent_txs(include_pending, only_pending, limit)
 

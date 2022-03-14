@@ -137,7 +137,7 @@
           }
         },
         "summary": "get bridge information from a transaction hash",
-        "tags": ["Transaction"]
+        "tags": ["Search"]
       }
     },
     "/api/v1/search/address/{address}": {
@@ -178,7 +178,60 @@
           }
         },
         "summary": "get all transactions related to an address",
-        "tags": ["Address"]
+        "tags": ["Search"]
+      }
+    },
+    "/api/v1/transactions/recent": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_pending",
+            "required": false,
+            "description": "include pending and completed transacitons",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "only_pending",
+            "required": false,
+            "description": "include only pending transacitons",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "description": "limit the quantity of transactions",
+            "schema": {
+              "type": "number",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "get the latest transactions",
+        "tags": ["Transactions"]
       }
     }
   }

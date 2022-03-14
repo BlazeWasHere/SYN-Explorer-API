@@ -80,6 +80,7 @@ def init() -> Flask:
 
     app.url_map.converters['hex'] = HexConverter
 
+    from .routes.api.v1.transactions import transactions_bp
     from .routes.api.v1.analytics.users import users_bp
     from .routes.api.v1.search import search_bp
     from .routes.root import root_bp
@@ -87,5 +88,6 @@ def init() -> Flask:
     app.register_blueprint(root_bp)
     app.register_blueprint(search_bp, url_prefix='/api/v1/search')
     app.register_blueprint(users_bp, url_prefix='/api/v1/analytics/users')
+    app.register_blueprint(transactions_bp, url_prefix='/api/v1/transactions')
 
     return app

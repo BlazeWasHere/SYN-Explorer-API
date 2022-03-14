@@ -173,3 +173,34 @@ class Transaction(Base):
                 return None
 
         return ret
+
+    @staticmethod
+    def fetch_recent_txs(include_pending: bool,
+                         only_pending: bool,
+                         limit: int = 20) -> List["Transaction"]:
+        """
+        Fetch the most recent transactions in the database.
+        NOTE: `only_pending` is used if both options are set.
+        NOTE: if either `only_pending` or `include_pending` is set, the data
+            is sorted by `sent_time` rather than `received_time`.
+
+        Args:
+            include_pending (bool): Include pending transactions.
+            only_pending (bool): Include only pending transactions.
+        """
+
+        sql = "SELECT * FROM txs "
+
+        if only_pending:
+            sql += "WHERE pending=true "
+        elif not include_pending:
+            sql += "WHERE pending=false "
+
+        sql += "ORDER BY "
+        sql += "sent_time " if (include_pending
+                                or only_pending) else "received_time "
+        sql += "DESC LIMIT %s;"
+
+        with _psql_connection() as c:
+            c.execute(sql, (limit, ))
+            return c.fetchall()

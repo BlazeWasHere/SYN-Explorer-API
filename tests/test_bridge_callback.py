@@ -691,3 +691,35 @@ def test_polygon_gohm_out(rpcs: Dict[str, Web3]) -> None:
 
     ret = polygon_bridge_cb(log)
     assert ret == expected
+
+
+def test_ethereum_newo_out(rpcs: Dict[str, Web3]) -> None:
+    log = eth_get_log(
+        rpcs['ethereum'],
+        '0x6ae59b8d1c29be11e100e2b6c5845af9ec74d452b3bee7d1f1c9e6943adc055c',
+    )
+
+    expected = Transaction(
+        from_tx_hash=HexBytes(
+            '0x77240a333d99d383c79e3009f4a39dda7ba2f4573760fadeb4a1c2ba27a9e537'
+        ),
+        to_tx_hash=None,
+        from_address=HexBytes('0xc16cda7252eea10c876a6d3645bf0cec8cc6cb9f'),
+        to_address=HexBytes('0xc16cda7252eea10c876a6d3645bf0cec8cc6cb9f'),
+        sent_value=1398716743470196763784,
+        received_value=None,
+        pending=True,
+        from_chain_id=1,
+        to_chain_id=43114,
+        sent_time=1647257542,
+        received_time=None,
+        received_token=None,
+        sent_token=HexBytes('0x98585dfc8d9e7d48f0b1ae47ce33332cf4237d96'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0x7b10b35590be2af0a4d9514757b664055d2d4c7520966b9de7fd7d0967f79aeb'
+        ),
+    )
+
+    ret = eth_bridge_cb(log)
+    assert ret == expected

@@ -488,6 +488,7 @@ TOKENS = {
         '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',  # UST
         '0xfb21b70922b9f6e3c6274bcd6cb1aa8a0fe20b80',  # gOHM
         '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # SYN
+        '0xea32a96608495e54156ae48931a7c20f0dcc1a21',  # USDC
     ],
 }
 

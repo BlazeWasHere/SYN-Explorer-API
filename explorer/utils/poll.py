@@ -25,11 +25,14 @@ T = TypeVar('T')
 
 def log_loop(filter, chain: str, address: str, poll: int, cb: CB):
     while True:
-        # `event` is of type `EventData`.
-        for event in filter.get_new_entries():
-            retry(cb, chain, address, event, save_block_index=False)
-
-        gevent.sleep(poll)
+        try:
+            # `event` is of type `EventData`.
+            for event in filter.get_new_entries():
+                retry(cb, chain, address, event, save_block_index=False)
+        except Exception as e:
+            print(f'err filter log_loop: {e}')
+        finally:
+            gevent.sleep(poll)
 
 
 def start(cb: CB) -> None:

@@ -7,16 +7,19 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from typing import Any, List, Literal, Tuple, Generator, overload, Optional, \
-    get_args
+from typing import (Any, List, Literal, Tuple, Generator, overload, Optional,
+                    get_args)
 from dataclasses import dataclass, fields
 from contextlib import contextmanager
+from decimal import Decimal
+from attr import field
 
 from psycopg.rows import class_row
 from hexbytes import HexBytes
 from psycopg import Cursor
 
-from explorer.utils.data import PSQL
+from explorer.utils.data import PSQL, TOKEN_DECIMALS, CHAINS
+from explorer.utils.helpers import handle_decimals
 
 
 class NotFoundInDatabase(Exception):
@@ -34,6 +37,39 @@ def _psql_connection() -> Generator[Cursor['Transaction'], None, None]:
 
 class Base:
     def __post_init__(self) -> None:
+        # Handle token decimals.
+        if 'received_token' in self.__dict__:
+            chain = CHAINS[self.__dict__['to_chain_id']]
+            initial = self.__dict__['received_value']
+            token = self.__dict__['received_token']
+
+            if token is not None:
+                self.received_token = HexBytes(token)
+                decimals = TOKEN_DECIMALS[chain][self.received_token.hex()]
+
+                self.received_value_formatted = handle_decimals(
+                    initial,
+                    decimals,
+                )
+            else:
+                self.received_value_formatted = None
+
+        if 'sent_token' in self.__dict__:
+            chain = CHAINS[self.__dict__['from_chain_id']]
+            initial = self.__dict__['sent_value']
+            token = self.__dict__['sent_token']
+
+            if token is not None:
+                self.sent_token = HexBytes(token)
+                decimals = TOKEN_DECIMALS[chain][self.sent_token.hex()]
+
+                self.sent_value_formatted = handle_decimals(
+                    initial,
+                    decimals,
+                )
+            else:
+                self.sent_value_formatted = None
+
         for field in fields(self):
             val = self.__dict__[field.name]
 
@@ -59,6 +95,7 @@ class LostTransaction(Base):
     received_token: HexBytes
     swap_success: Optional[bool]
     kappa: HexBytes
+    received_value_formatted: Decimal = field(init=False)
 
 
 @dataclass
@@ -78,6 +115,8 @@ class Transaction(Base):
     sent_token: HexBytes
     swap_success: Optional[bool]
     kappa: HexBytes
+    received_value_formatted: Optional[Decimal] = field(init=False)
+    sent_value_formatted: Decimal = field(init=False)
 
     @staticmethod
     def search(column: str, value: Any) -> List["Transaction"]:

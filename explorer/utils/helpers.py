@@ -207,3 +207,10 @@ def find_same_token_across_chain(chain: str, to_chain: str,
         return data.address
 
     raise RuntimeError(f'{token} on {chain} to {to_chain} did not converge')
+
+
+def handle_decimals(num: Union[str, int, float, D], decimals: int) -> D:
+    if type(num) != D:
+        num = str(num)
+
+    return D(num) / 10**decimals

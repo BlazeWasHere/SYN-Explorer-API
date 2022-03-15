@@ -18,7 +18,7 @@ from psycopg.rows import class_row
 from hexbytes import HexBytes
 from psycopg import Cursor
 
-from explorer.utils.data import PSQL, TOKEN_DECIMALS, CHAINS
+from explorer.utils.data import PSQL, TOKEN_DECIMALS, CHAINS, TOKEN_SYMBOLS
 from explorer.utils.helpers import handle_decimals
 
 
@@ -46,12 +46,15 @@ class Base:
             if token is not None:
                 self.received_token = HexBytes(token)
                 decimals = TOKEN_DECIMALS[chain][self.received_token.hex()]
+                symbol = TOKEN_SYMBOLS[chain][self.received_token.hex()]
 
+                self.received_token_symbol = symbol
                 self.received_value_formatted = handle_decimals(
                     initial,
                     decimals,
                 )
             else:
+                self.received_token_symbol = None
                 self.received_value_formatted = None
 
         if 'sent_token' in self.__dict__:
@@ -62,15 +65,24 @@ class Base:
             if token is not None:
                 self.sent_token = HexBytes(token)
                 decimals = TOKEN_DECIMALS[chain][self.sent_token.hex()]
+                symbol = TOKEN_SYMBOLS[chain][self.sent_token.hex()]
 
+                self.sent_token_symbol = symbol
                 self.sent_value_formatted = handle_decimals(
                     initial,
                     decimals,
                 )
             else:
+                self.sent_token_symbol = None
                 self.sent_value_formatted = None
 
         for field in fields(self):
+            if field.name in [
+                    'sent_token_symbol', 'sent_value_formatted',
+                    'received_token_symbol', 'received_value_formatted'
+            ]:
+                continue
+
             val = self.__dict__[field.name]
 
             # Pscyopg returns psql's bytea as bytes.
@@ -96,6 +108,7 @@ class LostTransaction(Base):
     swap_success: Optional[bool]
     kappa: HexBytes
     received_value_formatted: Decimal = field(init=False)
+    received_token_symbol: str = field(init=False)
 
 
 @dataclass
@@ -116,7 +129,9 @@ class Transaction(Base):
     swap_success: Optional[bool]
     kappa: HexBytes
     received_value_formatted: Optional[Decimal] = field(init=False)
+    received_token_symbol: Optional[str] = field(init=False)
     sent_value_formatted: Decimal = field(init=False)
+    sent_token_symbol: str = field(init=False)
 
     @staticmethod
     def search(column: str, value: Any) -> List["Transaction"]:

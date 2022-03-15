@@ -545,6 +545,7 @@ for chain, tokens in TOKENS.items():
 gevent.joinall(__jobs, raise_error=True)
 
 TOKEN_DECIMALS: Dict[str, Dict[str, int]] = defaultdict(dict)
+TOKEN_SYMBOLS: Dict[str, Dict[str, str]] = defaultdict(dict)
 
 # `TOKEN_DECIMALS` is an abstraction of `TOKENS_INFO`.
 for chain, v in TOKENS_INFO.items():
@@ -552,6 +553,7 @@ for chain, v in TOKENS_INFO.items():
         assert token not in TOKEN_DECIMALS[chain], \
             f'duped token? {token} @ {chain} | {TOKEN_DECIMALS[chain][token]}'
 
+        TOKEN_SYMBOLS[chain].update({token: data['symbol'].lower()})
         TOKEN_DECIMALS[chain].update({token: data['decimals']})
 
 _TKS = DefaultDict[str, Dict[Literal['nusd', 'neth'], Dict[int, str]]]

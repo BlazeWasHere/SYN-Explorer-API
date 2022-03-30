@@ -41,6 +41,7 @@ _start_blocks = {
     'moonbeam': 173355,
     'cronos': 1578335,
     'metis': 957508,
+    'dfk': 0,
 }
 
 WETH = HexBytes('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')

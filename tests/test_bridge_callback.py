@@ -19,7 +19,8 @@ from tests.helper import (eth_get_log, avalanche_bridge_cb, polygon_bridge_cb,
                           arb_get_log, avalanche_get_log, ftm_get_log,
                           bsc_bridge_cb, ftm_bridge_cb, movr_get_log,
                           movr_bridge_cb, metis_get_log, metis_bridge_cb,
-                          cro_bridge_cb, cro_get_log)
+                          cro_bridge_cb, cro_get_log, dfk_bridge_cb,
+                          dfk_get_log, one_get_log, one_bridge_cb)
 from explorer.utils.database import Transaction, LostTransaction
 from explorer.utils.data import SYN_DATA
 
@@ -722,4 +723,61 @@ def test_ethereum_newo_out(rpcs: Dict[str, Web3]) -> None:
     )
 
     ret = eth_bridge_cb(log)
+    assert ret == expected
+
+
+def test_one_jewel_out(rpcs: Dict[str, Web3]) -> None:
+    log = one_get_log(
+        rpcs['harmony'],
+        '0x19b9d0fb9b4f4fd9fdf4f94a58673550c2149a39b20774d3b2e35cc6e34166f1',
+    )
+
+    expected = Transaction(
+        from_tx_hash=HexBytes(
+            '0x7ab6ec89a96c90aa35d2f78400725a803353a088781acebe3c5d4baf12f6152c'
+        ),
+        to_tx_hash=None,
+        from_address=HexBytes('0xca29713bca46e6854d50fe5e6c48b6e763c93f47'),
+        to_address=HexBytes('0xca29713bca46e6854d50fe5e6c48b6e763c93f47'),
+        sent_value=300000000000000000000,
+        received_value=None,
+        pending=True,
+        from_chain_id=1666600000,
+        to_chain_id=53935,
+        sent_time=1648653966,
+        received_time=None,
+        received_token=None,
+        sent_token=HexBytes('0x28b42698caf46b4b012cf38b6c75867e0762186d'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0xdbfd59bb953b8d216ab86fce51565474e9c0cbb7dc54f19fcab940bd4c8d87ca'
+        ),
+    )
+
+    ret = one_bridge_cb(log)
+    assert ret == expected
+
+
+def test_dfk_jewel_in(rpcs: Dict[str, Web3]) -> None:
+    log = dfk_get_log(
+        rpcs['dfk'],
+        '0x387042448b0aea7c522e7c3e2a5f81542f7ed1304a9c910534f91f7e528b4510',
+    )
+
+    expected = LostTransaction(
+        to_tx_hash=HexBytes(
+            '0xab43af3276d658670a6bb51d5bf6f7ca7c0a56e3505c478a29d14ec1dac99e5d'
+        ),
+        to_address=HexBytes('0xca29713bca46e6854d50fe5e6c48b6e763c93f47'),
+        received_value=299880000000000000000,
+        to_chain_id=53935,
+        received_time=1648654906,
+        received_token=HexBytes('0xccb93dabd71c8dad03fc4ce5559dc3d89f67a260'),
+        swap_success=None,
+        kappa=HexBytes(
+            '0xdbfd59bb953b8d216ab86fce51565474e9c0cbb7dc54f19fcab940bd4c8d87ca'
+        ),
+    )
+
+    ret = dfk_bridge_cb(log)
     assert ret == expected

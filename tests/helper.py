@@ -20,18 +20,22 @@ POLYGON_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['polygon']['bridge'])
 MOVR_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['moonriver']['bridge'])
 ARB_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['arbitrum']['bridge'])
 ETH_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['ethereum']['bridge'])
+ONE_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['harmony']['bridge'])
 METIS_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['metis']['bridge'])
 CRO_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['cronos']['bridge'])
 FTM_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['fantom']['bridge'])
 BSC_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['bsc']['bridge'])
+DFK_BRIDGE_ADDRESS = Web3.toChecksumAddress(SYN_DATA['dfk']['bridge'])
 AVALANCHE_BRIDGE_ADDRESS = Web3.toChecksumAddress(
     SYN_DATA['avalanche']['bridge'])
 
 _cb = partial(bridge_callback, testing=True, save_block_index=False)
 
+dfk_bridge_cb = partial(_cb, 'dfk', DFK_BRIDGE_ADDRESS)
 bsc_bridge_cb = partial(_cb, 'bsc', BSC_BRIDGE_ADDRESS)
 ftm_bridge_cb = partial(_cb, 'fantom', FTM_BRIDGE_ADDRESS)
 cro_bridge_cb = partial(_cb, 'cronos', CRO_BRIDGE_ADDRESS)
+one_bridge_cb = partial(_cb, 'harmony', ONE_BRIDGE_ADDRESS)
 arb_bridge_cb = partial(_cb, 'arbitrum', ARB_BRIDGE_ADDRESS)
 eth_bridge_cb = partial(_cb, 'ethereum', ETH_BRIDGE_ADDRESS)
 metis_bridge_cb = partial(_cb, 'metis', METIS_BRIDGE_ADDRESS)
@@ -57,6 +61,8 @@ def _get_log(w3: Web3,
     return log[idx]
 
 
+one_get_log = partial(_get_log, address=ONE_BRIDGE_ADDRESS)
+dfk_get_log = partial(_get_log, address=DFK_BRIDGE_ADDRESS)
 eth_get_log = partial(_get_log, address=ETH_BRIDGE_ADDRESS)
 arb_get_log = partial(_get_log, address=ARB_BRIDGE_ADDRESS)
 bsc_get_log = partial(_get_log, address=BSC_BRIDGE_ADDRESS)

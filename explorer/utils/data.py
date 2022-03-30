@@ -119,6 +119,10 @@ SYN_DATA = {
         "rpc": os.getenv('METIS_RPC'),
         "bridge": "0x06fea8513ff03a0d3f61324da709d4cf06f42a5c",
     },
+    "dfk": {
+        "rpc": os.getenv('DFK_RPC'),
+        "bridge": "0xe05c976d3f045d0e6e7a6f61083d98a15603cf6a",
+    },
 }
 
 # Init 'func' to append `contract` to SYN_DATA so we can call the ABI simpler later.
@@ -198,6 +202,7 @@ CHAINS = {
     1284: 'moonbeam',
     25: 'cronos',
     1088: 'metis',
+    53935: 'dfk',
 }
 
 CHAINS_REVERSED = {v: k for k, v in CHAINS.items()}
@@ -342,6 +347,8 @@ TOKENS = {
         '0x0ab87046fbb341d058f17cbc4c1133f25a20a52f',  # gOHM
         '0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb',  # UST
         '0x98585dFc8d9e7D48F0b1aE47ce33332CF4237D96',  # NEWO
+        '0x73968b9a57c6e53d41345fd57a6e6ae27d6cdb2f',  # SDT
+        '0x02b5453d92b730f29a86a0d5ef6e930c4cf8860b',  # USDB
     ],
     'bsc': [
         '0x23b891e5c62e0955ae2bd185990103928ab817b3',  # nUSD
@@ -358,6 +365,7 @@ TOKENS = {
         '0xc13b7a43223bb9bf4b69bd68ab20ca1b79d81c75',  # JGN
         '0x88918495892baf4536611e38e75d771dc6ec0863',  # gOHM
         '0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c',  # UST
+        '0xc8699abbba90c7479dedccef19ef78969a2fc608',  # USDB
     ],
     'polygon': [
         '0xf8f9efc0db77d8881500bb06ff5d6abc3070e695',  # SYN
@@ -372,6 +380,7 @@ TOKENS = {
         '0x48a34796653afdaa1647986b33544c911578e767',  # synFRAX
         '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',  # WETH
         '0x565098CBa693b3325f9fe01D41b7A1cd792Abab1',  # UST
+        '0xfa1fbb8ef55a4855e5688c0ee13ac3f202486286',  # USDB
     ],
     'avalanche': [
         '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',  # DAI
@@ -390,6 +399,9 @@ TOKENS = {
         '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',  # WAVAX
         '0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43',  # UST
         '0x4Bfc90322dD638F81F034517359BD447f8E0235a',  # NEWO
+        '0xccbf7c451f81752f7d2237f2c18c371e6e089e69',  # SDT
+        '0x5ab7084cb9d270c2cb052dd30dbecbca42f8620c',  # USDB
+        '0x997ddaa07d716995de90577c123db411584e5e46',  # JEWEL
     ],
     'arbitrum': [
         '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',  # DAI
@@ -406,6 +418,7 @@ TOKENS = {
         '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',  # GMX
         '0x13780E6d5696DD91454F6d3BbC2616687fEa43d0',  # UST
         '0x0877154a755B24D499B8e2bD7ecD54d3c92BA433',  # NEWO
+        '0x1a4da80967373fd929961e976b4b53ceec063a15',  # LUNA
     ],
     'fantom': [
         '0x04068da6c83afcfa0e13ba15a6696662335d5b75',  # USDC
@@ -420,6 +433,8 @@ TOKENS = {
         '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # nETH
         '0x74b23882a30290451a17c44f4f05243b6b58c76d',  # WETH
         '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',  # UST
+        '0xe3c82a836ec85311a433fbd9486efaf4b1afbf48',  # SDT
+        '0x6fc9383486c163fa48becdec79d6058f984f62ca',  # USDB
     ],
     'harmony': [
         '0xe55e19fb4f2d85af758950957714292dac1e25b2',  # SYN
@@ -434,6 +449,9 @@ TOKENS = {
         '0x0b5740c6b4a97f90ef2f0220651cca420b868ffb',  # nETH
         '0x6983d1e6def3690c4d616b13597a09e6193ea013',  # 1ETH
         '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',  # UST
+        '0xe3c82a836ec85311a433fbd9486efaf4b1afbf48',  # SDT
+        '0xd9eaa386ccd65f30b77ff175f6b52115fe454fd6',  # AVAX
+        '0x28b42698caf46b4b012cf38b6c75867e0762186d',  # synJEWEL
     ],
     'boba': [
         '0x66a2a913e447d6b4bf33efbec43aaef87890fbbc',  # USDC
@@ -456,6 +474,7 @@ TOKENS = {
         '0x76906411d07815491a5e577022757ad941fb5066',  # veSOLAR
         '0x98878b06940ae243284ca214f92bb71a2b032b8a',  # WMOVR
         '0xa9D0C0E124F53f4bE1439EBc35A9C73c0e8275fB',  # UST
+        '0x3e193c39626bafb41ebe8bdd11ec7cca9b3ec0b2',  # USDB
     ],
     'optimism': [
         '0x809dc529f07651bd43a172e8db6f4a7a0d771036',  # nETH
@@ -464,6 +483,7 @@ TOKENS = {
         '0x4200000000000000000000000000000000000006',  # WETH
         '0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80',  # UST
         '0x0b5740c6b4a97f90ef2f0220651cca420b868ffb',  # gOHM
+        '0x931b8f17764362a3325d30681009f0edd6211231',  # LUNA
     ],
     'aurora': [
         '0xd80d8688b02b3fd3afb81cdb124f188bb5ad0445',  # SYN
@@ -486,14 +506,25 @@ TOKENS = {
     'cronos': [
         '0x7Bb5c7e3bF0B2a28fA26359667110bB974fF9359',  # UST
         '0xfd0f80899983b8d46152aa1717d76cba71a31616',  # SYN
+        '0x396c9c192dd323995346632581bef92a31ac623b',  # nUSD
         '0xbb0a63a6ca2071c6c4bcac11a1a317b20e3e999c',  # gOHM
     ],
     'metis': [
         '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',  # UST
         '0xfb21b70922b9f6e3c6274bcd6cb1aa8a0fe20b80',  # gOHM
+        '0x961318fc85475e125b99cc9215f62679ae5200ab',  # nUSD
         '0x67c10c397dd0ba417329543c1a40eb48aaa7cd00',  # SYN
         '0xea32a96608495e54156ae48931a7c20f0dcc1a21',  # USDC
-        '0x961318fc85475e125b99cc9215f62679ae5200ab',  # nUSD
+        '0x931b8f17764362a3325d30681009f0edd6211231',  # nETH
+        '0x420000000000000000000000000000000000000a',  # WETH 
+    ],
+    'dfk': [
+        '0xb57b60debdb0b8172bb6316a9164bd3c695f133a',  # AVAX
+        '0xccb93dabd71c8dad03fc4ce5559dc3d89f67a260',  # WJEWEL
+        '0x9596a3c6a4b2597adcc5d6d69b281a7c49e3fe6a',  # nETH
+        '0x52285d426120ab91f378b3df4a15a036a62200ae',  # nUSD
+        '0x77f2656d04e158f915bc22f07b779d94c1dc47ff',  # xJEWEL
+        '0xb6b5c854a8f71939556d4f3a2e5829f7fcc1bf2a',  # SYN
     ],
 }
 

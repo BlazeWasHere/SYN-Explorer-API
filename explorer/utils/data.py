@@ -452,7 +452,7 @@ TOKENS = {
         '0xe3c82a836ec85311a433fbd9486efaf4b1afbf48',  # SDT
         '0xd9eaa386ccd65f30b77ff175f6b52115fe454fd6',  # AVAX
         '0x28b42698caf46b4b012cf38b6c75867e0762186d',  # synJEWEL
-        '0x2e7669f61ea77f02445a015fbdcfe2de47083e02',  # xJEWEL
+        '0xa9ce83507d872c5e1273e745abcfda849daa654f',  # xJEWEL
     ],
     'boba': [
         '0x66a2a913e447d6b4bf33efbec43aaef87890fbbc',  # USDC

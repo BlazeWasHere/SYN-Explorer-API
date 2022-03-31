@@ -16,6 +16,7 @@ monkey.patch_all()
 from math import log2
 
 from werkzeug.routing import BaseConverter, Map
+from flask.wrappers import Response
 from web3._utils import request
 from hexbytes import HexBytes
 import simplejson as json
@@ -89,5 +90,11 @@ def init() -> Flask:
     app.register_blueprint(search_bp, url_prefix='/api/v1/search')
     app.register_blueprint(users_bp, url_prefix='/api/v1/analytics/users')
     app.register_blueprint(transactions_bp, url_prefix='/api/v1/transactions')
+
+    @app.after_request
+    def after_request(response: Response):
+        header = response.headers
+        header['Access-Control-Allow-Origin'] = '*'
+        return response
 
     return app

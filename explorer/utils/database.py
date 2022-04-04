@@ -258,3 +258,55 @@ class Transaction(Base):
         with _psql_connection() as c:
             c.execute(sql, (limit, ))
             return c.fetchall()
+
+    @staticmethod
+    def generic_search(limit: int = 50,
+                       offset: int = 0,
+                       **args) -> List["Transaction"]:
+        """
+        Fetch the most recent transactions in the database that match the args passed.
+        Args:
+            limit (int): Number of results to this number
+            offset (int): Offsets results by this number
+            args (dict): Column names to filter results by
+        """
+
+        sql = "SELECT * FROM txs "
+
+        if len(args) > 0:
+            sql += "WHERE ("
+            cnt = 0
+
+            if chain_id_from := args["chain_id_from"]:
+                sql += f"chain_id_from={chain_id_from}"
+                cnt += 1
+
+            if chain_id_to := args["chain_id_to"]:
+                sql += "AND " if cnt else sql
+                sql += f"chain_id_to={chain_id_to})"
+                cnt += 1
+
+            if from_tx_hash := args["from_tx_hash"]:
+                sql += "AND " if cnt else sql
+                sql += f"from_tx_hash={from_tx_hash})"
+                cnt += 1
+
+            if to_tx_hash := args["to_tx_hash"]:
+                sql += "AND " if cnt else sql
+                sql += f"chain_id_to={to_tx_hash})"
+                cnt += 1
+
+            if keccak_hash := args["keccak_hash"]:
+                sql += "AND " if cnt else sql
+                sql += f"kappa={keccak_hash})"
+                cnt += 1
+
+            sql += ")"
+
+        sql += "ORDER BY sent_time "
+        sql += f"DESC LIMIT {limit} "
+        sql += f"OFFSET {offset} "
+
+        with _psql_connection() as c:
+            c.execute(sql, (limit,))
+            return c.fetchall()

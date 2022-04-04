@@ -33,8 +33,8 @@ def search_recent_txs():
 
 @transactions_bp.route('/', methods=['GET'])
 def search():
-    chain_id_from: Optional[str] = request.args.get('chain_id_from', None, int)
-    chain_id_to: Optional[str] = request.args.get('chain_id_to', None, int)
+    chain_id_from: Optional[int] = request.args.get('chain_id_from', None, int)
+    chain_id_to: Optional[int] = request.args.get('chain_id_to', None, int)
     from_tx_hash: Optional[str] = request.args.get('from_tx_hash', None, str)
     to_tx_hash: Optional[str] = request.args.get('to_tx_hash', None, str)
     keccak_hash: Optional[str] = request.args.get('keccak_hash', None, HexBytes)

@@ -35,9 +35,9 @@ def search_recent_txs():
 def search():
     from_chain_id: Optional[int] = request.args.get('from_chain_id', None, int)
     to_chain_id: Optional[int] = request.args.get('to_chain_id', None, int)
-    from_tx_hash: Optional[str] = request.args.get('from_tx_hash', None, str)
-    to_tx_hash: Optional[str] = request.args.get('to_tx_hash', None, str)
-    keccak_hash: Optional[str] = request.args.get('keccak_hash', None, HexBytes)
+    from_tx_hash: Optional[HexBytes] = request.args.get('from_tx_hash', None, HexBytes)
+    to_tx_hash: Optional[HexBytes] = request.args.get('to_tx_hash', None, HexBytes)
+    keccak_hash: Optional[HexBytes] = request.args.get('keccak_hash', None, HexBytes)
     offset: Optional[int] = request.args.get('offset', 0, int)
 
     ret = Transaction.generic_search(

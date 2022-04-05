@@ -273,6 +273,8 @@ class Transaction(Base):
         """
 
         params = args['args']
+        param_list = []
+
         sql = "SELECT * FROM txs "
 
         if len(set(params.values())) > 1:
@@ -280,35 +282,40 @@ class Transaction(Base):
             cnt = 0
 
             if from_chain_id := params["from_chain_id"]:
-                sql += f"from_chain_id={from_chain_id}"
+                sql += f"from_chain_id=%s"
+                param_list.append(from_chain_id)
                 cnt += 1
 
             if to_chain_id := params["to_chain_id"]:
                 sql += " AND " if cnt else sql
-                sql += f"to_chain_id={to_chain_id}"
+                sql += f"to_chain_id=%s"
+                param_list.append(to_chain_id)
                 cnt += 1
 
             if from_tx_hash := params["from_tx_hash"]:
                 sql += " AND " if cnt else sql
-                sql += f"from_tx_hash={from_tx_hash}"
+                sql += f"from_tx_hash=%s"
+                param_list.append(from_tx_hash)
                 cnt += 1
 
             if to_tx_hash := params["to_tx_hash"]:
                 sql += " AND " if cnt else sql
-                sql += f"to_tx_hash={to_tx_hash}"
+                sql += f"to_tx_hash=%s"
+                param_list.append(to_tx_hash)
                 cnt += 1
 
             if keccak_hash := params["keccak_hash"]:
                 sql += " AND " if cnt else sql
-                sql += f"kappa={keccak_hash}"
+                sql += f"kappa=%s"
+                param_list.append(keccak_hash)
                 cnt += 1
 
             sql += ") "
 
         sql += "ORDER BY sent_time "
-        sql += f"DESC LIMIT {limit} "
-        sql += f"OFFSET {offset} "
+        sql += f"DESC LIMIT %s "
+        sql += f"OFFSET %s"
 
         with _psql_connection() as c:
-            c.execute(sql, (limit,))
+            c.execute(sql, (*param_list, limit, offset))
             return c.fetchall()

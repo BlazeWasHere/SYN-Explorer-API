@@ -7,7 +7,6 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-import itertools
 from typing import (Any, List, Literal, Tuple, Generator, overload, Optional,
                     get_args)
 from dataclasses import dataclass, fields
@@ -272,43 +271,24 @@ class Transaction(Base):
             args (dict): Column names to filter results by
         """
 
-        params = args['args']
-        param_list = []
+        def _append_search_param(_sql, _param, _param_value, _param_values) -> str:
+            # Append columns to filter by to the WHERE clause
+
+            _sql += " AND " if len(_param_values) > 0 else ""
+            _sql += f"{_param}=%s"
+            _param_values.append(_param_value)
+            return _sql
+
+        params_passed = args['args']
+        values = []
 
         sql = "SELECT * FROM txs "
 
-        if len(set(params.values())) > 1:
+        if len(set(params_passed.values())) > 1:  # One or more value for an arg key is not None
             sql += "WHERE ("
-            cnt = 0
 
-            if from_chain_id := params["from_chain_id"]:
-                sql += f"from_chain_id=%s"
-                param_list.append(from_chain_id)
-                cnt += 1
-
-            if to_chain_id := params["to_chain_id"]:
-                sql += " AND " if cnt else sql
-                sql += f"to_chain_id=%s"
-                param_list.append(to_chain_id)
-                cnt += 1
-
-            if from_tx_hash := params["from_tx_hash"]:
-                sql += " AND " if cnt else sql
-                sql += f"from_tx_hash=%s"
-                param_list.append(from_tx_hash)
-                cnt += 1
-
-            if to_tx_hash := params["to_tx_hash"]:
-                sql += " AND " if cnt else sql
-                sql += f"to_tx_hash=%s"
-                param_list.append(to_tx_hash)
-                cnt += 1
-
-            if keccak_hash := params["keccak_hash"]:
-                sql += " AND " if cnt else sql
-                sql += f"kappa=%s"
-                param_list.append(keccak_hash)
-                cnt += 1
+            for p, v in params_passed.items():
+                sql = _append_search_param(sql, p, v, values) if v else sql
 
             sql += ") "
 
@@ -317,5 +297,5 @@ class Transaction(Base):
         sql += f"OFFSET %s"
 
         with _psql_connection() as c:
-            c.execute(sql, (*param_list, limit, offset))
+            c.execute(sql, (*values, limit, offset))
             return c.fetchall()

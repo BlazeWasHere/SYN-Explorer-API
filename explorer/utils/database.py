@@ -309,8 +309,6 @@ class Transaction(Base):
         sql += f"DESC LIMIT {limit} "
         sql += f"OFFSET {offset} "
 
-        print(sql)
-
         with _psql_connection() as c:
             c.execute(sql, (limit,))
             return c.fetchall()

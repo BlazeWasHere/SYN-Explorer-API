@@ -33,20 +33,18 @@ def search_recent_txs():
 
 @transactions_bp.route('/', methods=['GET'])
 def search():
-    chain_id_from: Optional[int] = request.args.get('chain_id_from', None, int)
-    chain_id_to: Optional[int] = request.args.get('chain_id_to', None, int)
+    from_chain_id: Optional[int] = request.args.get('from_chain_id', None, int)
+    to_chain_id: Optional[int] = request.args.get('to_chain_id', None, int)
     from_tx_hash: Optional[str] = request.args.get('from_tx_hash', None, str)
     to_tx_hash: Optional[str] = request.args.get('to_tx_hash', None, str)
     keccak_hash: Optional[str] = request.args.get('keccak_hash', None, HexBytes)
-    limit = request.args.get('limit', 50, int)
-    offset = request.args.get('offset', 0, int)
+    offset: Optional[int] = request.args.get('offset', 0, int)
 
     ret = Transaction.generic_search(
-        limit,
-        offset,
+        offset=offset,
         args={
-            "chain_id_from": chain_id_from,
-            "chain_id_to": chain_id_to,
+            "from_chain_id": from_chain_id,
+            "to_chain_id": to_chain_id,
             "from_tx_hash": from_tx_hash,
             "to_tx_hash": to_tx_hash,
             "keccak_hash": keccak_hash

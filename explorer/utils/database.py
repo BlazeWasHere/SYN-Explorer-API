@@ -7,6 +7,7 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
+import itertools
 from typing import (Any, List, Literal, Tuple, Generator, overload, Optional,
                     get_args)
 from dataclasses import dataclass, fields
@@ -271,41 +272,44 @@ class Transaction(Base):
             args (dict): Column names to filter results by
         """
 
+        params = args['args']
         sql = "SELECT * FROM txs "
 
-        if len(args) > 0:
+        if len(set(params.values())) > 1:
             sql += "WHERE ("
             cnt = 0
 
-            if chain_id_from := args["chain_id_from"]:
-                sql += f"chain_id_from={chain_id_from}"
+            if from_chain_id := params["from_chain_id"]:
+                sql += f"from_chain_id={from_chain_id}"
                 cnt += 1
 
-            if chain_id_to := args["chain_id_to"]:
-                sql += "AND " if cnt else sql
-                sql += f"chain_id_to={chain_id_to})"
+            if to_chain_id := params["to_chain_id"]:
+                sql += " AND " if cnt else sql
+                sql += f"to_chain_id={to_chain_id}"
                 cnt += 1
 
-            if from_tx_hash := args["from_tx_hash"]:
-                sql += "AND " if cnt else sql
-                sql += f"from_tx_hash={from_tx_hash})"
+            if from_tx_hash := params["from_tx_hash"]:
+                sql += " AND " if cnt else sql
+                sql += f"from_tx_hash={from_tx_hash}"
                 cnt += 1
 
-            if to_tx_hash := args["to_tx_hash"]:
-                sql += "AND " if cnt else sql
-                sql += f"chain_id_to={to_tx_hash})"
+            if to_tx_hash := params["to_tx_hash"]:
+                sql += " AND " if cnt else sql
+                sql += f"to_tx_hash={to_tx_hash}"
                 cnt += 1
 
-            if keccak_hash := args["keccak_hash"]:
-                sql += "AND " if cnt else sql
-                sql += f"kappa={keccak_hash})"
+            if keccak_hash := params["keccak_hash"]:
+                sql += " AND " if cnt else sql
+                sql += f"kappa={keccak_hash}"
                 cnt += 1
 
-            sql += ")"
+            sql += ") "
 
         sql += "ORDER BY sent_time "
         sql += f"DESC LIMIT {limit} "
         sql += f"OFFSET {offset} "
+
+        print(sql)
 
         with _psql_connection() as c:
             c.execute(sql, (limit,))

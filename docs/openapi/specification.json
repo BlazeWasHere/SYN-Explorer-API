@@ -233,6 +233,90 @@
         "summary": "get the latest transactions",
         "tags": ["Transactions"]
       }
+    },
+    "/api/v1/transactions/": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from_chain_id",
+            "required": false,
+            "description": "Chain ID transaction is from",
+            "schema": {
+              "type": "number",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_chain_id",
+            "required": false,
+            "description": "Chain ID transaction is to",
+            "schema": {
+              "type": "number",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_tx_hash",
+            "required": false,
+            "description": "From Transaction Hash",
+            "schema": {
+              "type": "string",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_tx_hash",
+            "required": false,
+            "description": "To Transaction Hash",
+            "schema": {
+              "type": "string",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "keccak_hash",
+            "required": false,
+            "description": "Kappa",
+            "schema": {
+              "type": "string",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "description": "Offset results by these many results",
+            "schema": {
+              "type": "number",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "List out transactions ordered by sent_time filtered by by parameters",
+        "tags": ["Transactions"]
+      }
     }
+
   }
 }

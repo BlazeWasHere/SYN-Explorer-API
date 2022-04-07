@@ -293,8 +293,8 @@ class Transaction(Base):
             sql += ") "
 
         sql += "ORDER BY sent_time "
-        sql += f"DESC LIMIT %s "
-        sql += f"OFFSET %s"
+        sql += "DESC LIMIT %s "
+        sql += "OFFSET %s"
 
         with _psql_connection() as c:
             c.execute(sql, (*values, limit, offset))

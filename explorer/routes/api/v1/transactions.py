@@ -37,7 +37,7 @@ def search():
     to_chain_id: Optional[int] = request.args.get('to_chain_id', None, int)
     from_tx_hash: Optional[HexBytes] = request.args.get('from_tx_hash', None, HexBytes)
     to_tx_hash: Optional[HexBytes] = request.args.get('to_tx_hash', None, HexBytes)
-    keccak_hash: Optional[HexBytes] = request.args.get('keccak_hash', None, HexBytes)
+    kappa: Optional[HexBytes] = request.args.get('kappa', None, HexBytes)
     offset: Optional[int] = request.args.get('offset', 0, int)
 
     ret = Transaction.generic_search(
@@ -47,7 +47,7 @@ def search():
             "to_chain_id": to_chain_id,
             "from_tx_hash": from_tx_hash,
             "to_tx_hash": to_tx_hash,
-            "keccak_hash": keccak_hash
+            "kappa": kappa
         }
     )
 

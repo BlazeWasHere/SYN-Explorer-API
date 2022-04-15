@@ -7,7 +7,7 @@
           https://www.boost.org/LICENSE_1_0.txt)
 """
 
-from flask import jsonify, Blueprint
+from flask import jsonify, Blueprint, request
 
 from explorer.utils.analytics.users import get_unique_users_count
 
@@ -17,4 +17,7 @@ users_bp = Blueprint('users_bp', __name__)
 # TODO: cache.
 @users_bp.route('/unique', methods=['GET'])
 def users_unique():
-    return jsonify(get_unique_users_count())
+    from_time = request.args.get('from_time', type=int)
+    to_time = request.args.get('to_time', type=int)
+
+    return jsonify(get_unique_users_count(from_time, to_time))

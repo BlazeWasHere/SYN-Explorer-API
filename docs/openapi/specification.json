@@ -85,6 +85,26 @@
   "paths": {
     "/api/v1/analytics/users/unique": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from_time",
+            "required": false,
+            "description": "unix timestamp",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_time",
+            "required": false,
+            "description": "unix timestamp",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
